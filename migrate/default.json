@@ -1,0 +1,14 @@
+[
+  {
+    "id": "5fc5f970100333097e15017b",
+    "created_at": 1611990100,
+    "updated_at": 1611990100,
+    "first_name": "Luc",
+    "last_name": "Dinh",
+    "user_name": "admin",
+    "password": "pbkdf2:sha256:150000$5AqLSbPI$9251a40195a7546ff4e4576dfd04d028fc2aea80e65328464516a06f343bbd94",
+    "email": "luc.dinh@boot.ai",
+    "phone": "0132465876",
+    "is_admin": true
+  }
+]

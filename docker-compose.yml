@@ -1,0 +1,15 @@
+version: '3'
+services:
+  api:
+    build: .
+    ports:
+      - "5011:5000"
+    restart: always
+    volumes:
+      - .:/code
+    links:
+      - db
+  db:
+    image: mongo:3.6.14
+  redis:
+    image: "redis"
