@@ -6,12 +6,10 @@ from flask_jwt_extended import (
     jwt_refresh_token_required, get_jwt_identity,
     create_refresh_token, get_raw_jwt
 )
-from jsonschema import validate
 from werkzeug.security import check_password_hash
 
 from app.extensions import jwt, logger
 from app.models import TokenBlacklist, User
-from app.schema.schema_validator import category_validator
 from app.utils import parse_req, FieldString, send_result, send_error, get_datetime_now
 
 ACCESS_EXPIRES = timedelta(minutes=30)
@@ -62,8 +60,7 @@ def login():
         'username': user.user_name,
         'email': user.email,
         'phone': user.phone,
-        'first_name': user.first_name,
-        'last_name': user.last_name
+        'nickname': user.nickname
     }, message='Login successfully!')
 
 

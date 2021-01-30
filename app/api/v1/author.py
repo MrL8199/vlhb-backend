@@ -7,11 +7,11 @@ from jsonschema import validate
 
 from app.decorators import admin_required
 from app.extensions import logger
-from app.models import Category
-from app.schema.schema_validator import category_validator
+from app.models import Author
+from app.schema.schema_validator import author_validator
 from app.utils import send_result, send_error
 
-api = Blueprint('category', __name__)
+api = Blueprint('authors', __name__)
 
 
 @api.route('/', methods=['POST'])
@@ -19,7 +19,7 @@ api = Blueprint('category', __name__)
 @admin_required()
 def post():
     """
-    Function: Create new category
+    Function: Create new author
 
     Input: name, imageURL
 
@@ -29,9 +29,11 @@ def post():
     try:
         json_data = request.get_json()
         # Check valid params
-        validate(instance=json_data, schema=category_validator)
+        validate(instance=json_data, schema=author_validator)
 
         name = json_data.get('name', None)
+        picture = json_data.get('picture', None)
+        info = json_data.get('info', None)
     except Exception as ex:
         logger.error('{} Parameters error: '.format(datetime.now().strftime('%Y-%b-%d %H:%M:%S')) + str(ex))
         return send_error(message="Parameters invalid")
@@ -40,26 +42,28 @@ def post():
 
     data = {
         'id': _id,
-        'name': name
+        'name': name,
+        'picture': picture,
+        'info': info
     }
-    category = Category()
+    author = Author()
     for key in data.keys():
-        category.__setattr__(key, data[key])
+        author.__setattr__(key, data[key])
 
     try:
-        category.save_to_db()
+        author.save_to_db()
     except Exception as ex:
         logger.error('{} Database error: '.format(datetime.now().strftime('%Y-%b-%d %H:%M:%S')) + str(ex))
-        return send_error(message="An error occurred while create category")
+        return send_error(message="An error occurred while create author")
 
-    return send_result(message="Create category successfully!", data=category.json())
+    return send_result(message="Create author successfully!", data=author.json())
 
 
-@api.route('/<category_id>', methods=['PUT'])
+@api.route('/<author_id>', methods=['PUT'])
 @jwt_required
 @admin_required()
-def update(category_id):
-    """ This is api for the vendor edit the category.
+def update(author_id):
+    """ This is api for the vendor edit the author.
 
         Request Body: name
 
@@ -69,62 +73,62 @@ def update(category_id):
 
     """
 
-    category = Category.find_by_id(category_id)
-    if category is None:
-        return send_error(message="Category not found!")
+    author = Author.find_by_id(author_id)
+    if author is None:
+        return send_error(message="Author not found!")
 
     try:
         json_data = request.get_json()
         # Check valid params
-        validate(instance=json_data, schema=category_validator)
+        validate(instance=json_data, schema=author_validator)
     except Exception as ex:
         logger.error('{} Parameters error: '.format(datetime.now().strftime('%Y-%b-%d %H:%M:%S')) + str(ex))
         return send_error(message="Parameters invalid")
 
-    keys = ["name"]
+    keys = ["name", "picture", "info"]
     data = {}
     for key in keys:
         if key in json_data:
             data[key] = json_data.get(key)
-            category.__setattr__(key, json_data.get(key))
+            author.__setattr__(key, json_data.get(key))
 
     try:
-        category.save_to_db()
+        author.save_to_db()
     except Exception as ex:
         logger.error('{} Database error: '.format(datetime.now().strftime('%Y-%b-%d %H:%M:%S')) + str(ex))
-        return send_error(message="An error occurred while update category")
+        return send_error(message="An error occurred while update author")
 
-    return send_result(data=data, message="Update category successfully!")
+    return send_result(data=data, message="Update author successfully!")
 
 
-@api.route('/<category_id>', methods=['DELETE'])
+@api.route('/<author_id>', methods=['DELETE'])
 @jwt_required
 @admin_required()
-def delete(category_id):
-    """ This api for the vendor deletes the category.
+def delete(author_id):
+    """ This api for the vendor deletes the author.
 
         Returns:
 
         Examples::
 
     """
-    category = Category.find_by_id(category_id)
-    if category is None:
-        return send_error(message="Category not found!")
+    author = Author.find_by_id(author_id)
+    if author is None:
+        return send_error(message="Author not found!")
 
     # Also delete all children foreign key
     try:
-        category.delete_from_db()
+        author.delete_from_db()
     except Exception as ex:
         logger.error('{} Database error: '.format(datetime.now().strftime('%Y-%b-%d %H:%M:%S')) + str(ex))
-        return send_error(message="An error occurred while delete category")
+        return send_error(message="An error occurred while delete author")
 
-    return send_result(message="Delete category successfully!")
+    return send_result(message="Delete author successfully!")
 
 
 @api.route('', methods=['GET'])
 def get_all():
-    """ This api gets all categories.
+    """ This api gets all authors.
 
         Returns:
 
@@ -132,13 +136,13 @@ def get_all():
 
     """
 
-    results = Category.find_all()
+    results = Author.find_all()
     return send_result(data=list(result.json() for result in results))
 
 
-@api.route('/<category_id>', methods=['GET'])
-def get_by_id(category_id):
-    """ This api get information of a category.
+@api.route('/<author_id>', methods=['GET'])
+def get_by_id(author_id):
+    """ This api get information of a author.
 
         Returns:
 
@@ -146,7 +150,7 @@ def get_by_id(category_id):
 
     """
 
-    category = Category.find_by_id(category_id)
-    if not category:
-        return send_error(message="Category not found!")
-    return send_result(data=category.json())
+    author = Author.find_by_id(author_id)
+    if not author:
+        return send_error(message="Author not found!")
+    return send_result(data=author.json())

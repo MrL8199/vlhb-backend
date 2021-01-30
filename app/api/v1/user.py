@@ -21,7 +21,7 @@ def post():
     """
     Function: User registration account
 
-    Input: user_name, password, full_name, email, phone, is_admin
+    Input: user_name, password, nickname, email, phone, is_admin
 
     Output: Success / Error Message
     """
@@ -31,7 +31,7 @@ def post():
         # Check valid params
         validate(instance=json_data, schema=user_validator)
 
-        full_name = json_data.get('full_name', None)
+        nickname = json_data.get('nickname', None)
         email = json_data.get('email', None).lower()
         phone = json_data.get('phone', None)
         user_name = json_data.get('user_name', None).strip().lower()
@@ -47,7 +47,7 @@ def post():
 
         data = {
             'id': _id,
-            'full_name': full_name,
+            'nickname': nickname,
             'user_name': user_name,
             'password': hash_password(password),
             'email': email,
@@ -91,7 +91,7 @@ def update_user(user_id):
         logger.error('{} Parameters error: '.format(datetime.now().strftime('%Y-%b-%d %H:%M:%S')) + str(ex))
         return send_error(message="Parameters invalid")
 
-    keys = ["first_name", "last_name", "phone", "email", "is_admin"]
+    keys = ["nickname", "phone", "email", "is_admin"]
     data = {}
     for key in keys:
         if key in json_data:
@@ -129,7 +129,7 @@ def update_info():
         logger.error('{} Parameters error: '.format(datetime.now().strftime('%Y-%b-%d %H:%M:%S')) + str(ex))
         return send_error(message="Parameters invalid")
 
-    keys = ["first_name", "last_name", "phone", "email"]
+    keys = ["nickname", "phone", "email"]
 
     user = User.find_by_id(get_jwt_identity())
 

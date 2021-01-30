@@ -11,12 +11,7 @@ user_validator = {
             "minLength": 3,
             "maxLength": 50
         },
-        "first_name": {
-            "type": "string",
-            "minLength": 1,
-            "maxLength": 50
-        },
-        "last_name": {
+        "nickname": {
             "type": "string",
             "minLength": 1,
             "maxLength": 50
@@ -43,12 +38,7 @@ user_validator = {
 user_update_validator = {
     "type": "object",
     "properties": {
-        "first_name": {
-            "type": "string",
-            "minLength": 1,
-            "maxLength": 50
-        },
-        "last_name": {
+        "nickname": {
             "type": "string",
             "minLength": 1,
             "maxLength": 50
@@ -98,6 +88,85 @@ category_validator = {
         }
     },
     "required": ["name"]
+}
+
+publisher_validator = {
+    "type": "object",
+    "properties": {
+        "name": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 80
+        }
+    },
+    "required": ["name"]
+}
+
+author_validator = {
+    "type": "object",
+    "properties": {
+        "name": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 80
+        },
+        "info": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 1024
+        },
+        "picture": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 1024
+        }
+    },
+    "required": ["name"]
+}
+
+address_validator = {
+    "type": "object",
+    "properties": {
+        "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 50
+        },
+        "default": {
+            "type": "boolean"
+        },
+        "phone": {
+            "type": "number",
+            "minLength": 1,
+            "maxLength": 15
+        },
+        "email": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 50
+        },
+        "address": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 50
+        },
+        "city": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 50
+        },
+        "state": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 50
+        },
+        "district": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 50
+        }
+    },
+    "required": ["name", "phone", "address", "city", "state"]
 }
 
 product_validator = {

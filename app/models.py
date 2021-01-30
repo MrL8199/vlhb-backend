@@ -13,8 +13,7 @@ class User(db.Model):
     id = db.Column(db.String(40), primary_key=True)
     created_at = db.Column(db.Integer, nullable=False, default=get_datetime_now_s())
     updated_at = db.Column(db.Integer, default=None)
-    first_name = db.Column(db.String(80), default=None)
-    last_name = db.Column(db.String(80), default=None)
+    nickname = db.Column(db.String(80), default=None)
     user_name = db.Column(db.String(80), nullable=False, unique=True, index=True)
     password = db.Column(db.String(255), nullable=False)
     email = db.Column(db.String(100), default=None)
@@ -25,8 +24,7 @@ class User(db.Model):
         return dict(
             id=self.id,
             created_at=self.created_at,
-            first_name=self.first_name,
-            last_name=self.last_name,
+            nickname=self.nickname,
             user_name=self.user_name,
             email=self.email,
             phone=self.phone
@@ -193,8 +191,6 @@ class Category(db.Model):
 
     id = db.Column(db.String(40), primary_key=True)
     name = db.Column(db.String(80), nullable=False)
-    create_date = db.Column(db.Integer, default=get_datetime_now_s())
-    modified_date = db.Column(db.Integer, default=get_datetime_now_s())
 
     products = db.relationship('Product', backref='Category', lazy=True, cascade='all, delete-orphan',
                                passive_deletes=True)
@@ -202,8 +198,7 @@ class Category(db.Model):
     def json(self):
         return dict(
             id=self.id,
-            name=self.name,
-            create_date=self.create_date
+            name=self.name
         )
 
     @classmethod
@@ -243,7 +238,6 @@ class Product(db.Model):
     author = db.relationship('Author')
     publisher_id = db.Column(db.String(40), db.ForeignKey('publishers.id', ondelete='CASCADE'), nullable=False)
     publisher = db.relationship('Publisher')
-
     category_id = db.Column(db.String(40), db.ForeignKey('categories.id', ondelete='CASCADE'), nullable=False)
     category = db.relationship('Category')
     images = db.relationship('ProductImage', backref='Product', lazy=True, cascade='all, delete-orphan',
@@ -342,7 +336,6 @@ class Order(db.Model):
     __tablename__ = 'orders'
 
     id = db.Column(db.String(40), primary_key=True)
-    user_id = db.Column(db.String(40), db.ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
     created_at = db.Column(db.Integer, nullable=False, default=get_datetime_now_s())
     updated_at = db.Column(db.Integer, default=None)
     status = db.Column(db.SmallInteger, nullable=False, default=0)
@@ -354,9 +347,11 @@ class Order(db.Model):
     promo = db.Column(db.String(40), default=None)
     discount = db.Column(db.Float(precision=2), default=0)
     grand_total = db.Column(db.Float(precision=2), nullable=False, default=0.0)
-    address_id = db.Column(db.String(40), db.ForeignKey('address.id', ondelete='CASCADE'), nullable=False)
     content = db.Column(db.Text, default=None)
 
+    user_id = db.Column(db.String(40), db.ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
+    address_id = db.Column(db.String(40), db.ForeignKey('address.id', ondelete='CASCADE'), nullable=False)
+    address = db.relationship('Address')
     order_details = db.relationship('OrderDetail', backref='Order', lazy=True, cascade='all, delete-orphan',
                                     passive_deletes=True)
 
@@ -403,13 +398,13 @@ class OrderDetail(db.Model):
     __tablename__ = 'order_details'
 
     id = db.Column(db.String(40), primary_key=True)
+    created_at = db.Column(db.Integer, nullable=False, default=get_datetime_now_s())
+    updated_at = db.Column(db.Integer, default=None)
     product_id = db.Column(db.String(40), db.ForeignKey('products.id', ondelete='CASCADE'))
     order_id = db.Column(db.String(40), db.ForeignKey('orders.id', ondelete='CASCADE'))
     price = db.Column(db.Float(precision=2), nullable=False, default=0.0)
     quantity = db.Column(db.SmallInteger, nullable=False, default=0)
     discount = db.Column(db.Float(precision=2), nullable=False, default=0.0)
-    created_at = db.Column(db.Integer, nullable=False, default=get_datetime_now_s())
-    updated_at = db.Column(db.Integer, default=None)
     content = db.Column(db.Text, default=None)
 
     def json(self):
@@ -441,15 +436,28 @@ class Address(db.Model):
 
     id = db.Column(db.String(40), primary_key=True)
     user_id = db.Column(db.String(40), db.ForeignKey('users.id', ondelete='SET NULL'))
-    first_name = db.Column(db.String(50), default=None)
-    last_name = db.Column(db.String(50), default=None)
-    mobile = db.Column(db.String(15), default=None)
+    default = db.Column(db.Boolean, nullable=False, default=False)
+    name = db.Column(db.String(50), default=None)
+    phone = db.Column(db.String(15), default=None)
     email = db.Column(db.String(50), default=None)
-    line1 = db.Column(db.String(50), nullable=False)
-    line2 = db.Column(db.String(50), default=None)
+    address = db.Column(db.String(50), default=None)
     city = db.Column(db.String(50), nullable=False)
-    province = db.Column(db.String(50), nullable=False)
-    district = db.Column(db.String(50), default=None)
+    state = db.Column(db.String(50), nullable=False)
+    district = db.Column(db.String(50), nullable=False)
+
+    def json(self):
+        return dict(
+            id=self.id,
+            user_id=self.user_id,
+            name=self.name,
+            default=self.default,
+            phone=self.phone,
+            email=self.email,
+            address=self.address,
+            city=self.city,
+            state=self.state,
+            district=self.district
+        )
 
     @classmethod
     def find_by_id(cls, _id):
@@ -457,7 +465,7 @@ class Address(db.Model):
 
     @classmethod
     def find_by_userid(cls, _id):
-        return cls.query.filter_by(user_id=_id).first()
+        return cls.query.filter_by(user_id=_id).all()
 
     @classmethod
     def find_all(cls):
