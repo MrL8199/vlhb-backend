@@ -91,3 +91,4 @@ def register_blueprints(app):
     app.register_blueprint(api_v1.upload.api, url_prefix='/api/v1/upload')
     app.register_blueprint(api_v1.checkout.api, url_prefix='/api/v1/checkout')
     app.register_blueprint(api_v1.orders.api, url_prefix='/api/v1/orders')
+    app.register_blueprint(api_v1.coupon.api, url_prefix='/api/v1/coupons')

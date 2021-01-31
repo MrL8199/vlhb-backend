@@ -562,13 +562,13 @@ class Coupon(db.Model):
     id = db.Column(db.String(40), primary_key=True)
     created_at = db.Column(db.Integer, nullable=False, default=get_datetime_now_s())
     updated_at = db.Column(db.Integer, default=None)
-    code = db.Column(db.String(10), unique=True, nullable=False)
+    code = db.Column(db.String(20), unique=True, nullable=False)
     description = db.Column(db.Text, default=None)
-    discount = db.Column(db.Float(precision=2), nullable=False, default=0.0)
+    value = db.Column(db.Float(precision=2), nullable=False, default=0.0)
     max_value = db.Column(db.Float(precision=2), nullable=False, default=0.0)
-    count = db.Column(db.SmallInteger, nullable=False, default=0)
-    valid_from = db.Column(db.Integer, nullable=False, default=get_datetime_now_s())
-    valid_until = db.Column(db.Integer, nullable=False, default=get_datetime_now_s())
+    amount = db.Column(db.SmallInteger, nullable=False, default=0)
+    start_date = db.Column(db.Integer, nullable=False, default=get_datetime_now_s())
+    end_date = db.Column(db.Integer, nullable=False, default=get_datetime_now_s())
     is_enable = db.Column(db.Boolean, default=False)
 
     def json(self):
@@ -576,11 +576,11 @@ class Coupon(db.Model):
             'id': self.id,
             'code': self.code,
             'description': self.description,
-            'discount': self.discount,
+            'value': self.value,
             'max_value': self.max_value,
-            'count': self.count,
-            'valid_from': self.valid_from,
-            'valid_until': self.valid_until,
+            'amount': self.amount,
+            'start_date': self.start_date,
+            'end_date': self.end_date,
             'is_enable': self.is_enable
         }
 

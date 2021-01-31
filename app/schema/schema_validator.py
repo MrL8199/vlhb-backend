@@ -305,3 +305,39 @@ order_validator = {
     },
     "required": ["status"]
 }
+
+coupon_validator = {
+    "type": "object",
+    "properties": {
+        "code": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 80
+        },
+        "value": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 101
+        },
+        "max_value": {
+            "type": "number",
+            "minimum": 0,
+            "maxLength": 10
+        },
+        "start_date": {
+            "type": "number",
+            "minLength": 3,
+            "maxLength": 80
+        },
+        "end_date": {
+            "type": "number",
+            "minLength": 3,
+            "maxLength": 80
+        },
+        "amount": {
+            "type": "number",
+            "minimum": 0
+        }
+    },
+    "required": ["code", "value", "max_value", "start_date", "end_date", "amount"]
+}

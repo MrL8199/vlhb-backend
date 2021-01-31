@@ -1,3 +1,14 @@
+in progress:
+- API review
+- API checkout
+- API CURD order
+- API Cart
+- Background task update coupon valid, invalid.
+
+pending:
+- gửi email đơn hàng về cho khách
+- xem order của bản thân khách
+- trigger SQL update số lượng product kho khi đơn hàng được tạo, hủy.
 
 daobaloc@gmail.com
 losice3480

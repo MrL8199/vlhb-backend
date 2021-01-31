@@ -8,3 +8,4 @@ from app.api.v1 import address
 from app.api.v1 import upload
 from app.api.v1 import checkout
 from app.api.v1 import orders
+from app.api.v1 import coupon
