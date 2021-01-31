@@ -1,4 +1,3 @@
-import os
 import uuid
 from datetime import datetime
 
@@ -7,7 +6,6 @@ from flask_jwt_extended import jwt_required
 from jsonschema import validate
 
 from app.decorators import admin_required
-from app.enums import PATH_IMAGE
 from app.extensions import logger, db
 from app.models import Product, Category, ProductImage
 from app.schema.schema_validator import product_validator
@@ -23,7 +21,8 @@ def post():
     """
     Function: Create new product
 
-    Input: name, price, images id, description, category_id
+    Input: title, price, images, publish_year, page_number, quantity, quotes_about, discount, start_at, end_at,
+    author_id, publisher_id,category_id
 
     Output: Success / Error Message
     """
@@ -33,12 +32,19 @@ def post():
         # Check valid params
         validate(instance=json_data, schema=product_validator)
 
-        name = json_data.get('name', None)
+        title = json_data.get('title', None)
         price = json_data.get('price', None)
         images = json_data.get('images', None)
-        description = json_data.get('description', None)
+        publish_year = json_data.get('publish_year', None)
+        page_number = json_data.get('page_number', None)
+        quantity = json_data.get('quantity', None)
+        quotes_about = json_data.get('quotes_about', None)
+        discount = json_data.get('discount', None)
+        start_at = json_data.get('start_at', None)
+        end_at = json_data.get('end_at', None)
+        author_id = json_data.get('author_id', None)
+        publisher_id = json_data.get('publisher_id', None)
         category_id = json_data.get('category_id', None)
-        size = json_data.get('size', None)
     except Exception as ex:
         logger.error('{} Parameters error: '.format(datetime.now().strftime('%Y-%b-%d %H:%M:%S')) + str(ex))
         return send_error(message="Parameters invalid")
@@ -52,24 +58,31 @@ def post():
     data = {
         'id': _id,
         'create_at': get_datetime_now_s(),
-        'name': name,
-        'price': price,
-        'description': description,
-        'subcategory_id': category_id,
-        'size': size
+        'title': title,
+        'price': (price-price*discount if discount is not None else price),
+        'publish_year': publish_year,
+        'page_number': page_number,
+        'quantity': quantity,
+        'quotes_about': quotes_about,
+        'discount': discount,
+        'start_at': start_at,
+        'end_at': end_at,
+        'author_id': author_id,
+        'publisher_id': publisher_id,
+        'category_id': category_id
     }
     product = Product()
     for key in data.keys():
         product.__setattr__(key, data[key])
 
     try:
-        product.save_to_db()
-
+        db.session.add(product)
         for image_id in images:
-            product_image = ProductImage.find_image_by_id(image_id)
+            product_image = ProductImage.find_by_id(image_id)
             if product_image is not None:
                 product_image.product_id = product.id
-                product_image.save_to_db()
+                db.session.add(product_image)
+        db.session.commit()
     except Exception as ex:
         logger.error('{} Database error: '.format(datetime.now().strftime('%Y-%b-%d %H:%M:%S')) + str(ex))
         return send_error(message="An error occurred while create product")
@@ -83,7 +96,8 @@ def post():
 def update_product(product_id: str):
     """ This is api for the vendor edit the product.
 
-        Request Body: name, price, images id, description, category_id
+        Request Body: title, price, images, publish_year, page_number, quantity, quotes_about, discount, start_at, end_at,
+    author_id, publisher_id,category_id
 
         Returns: Success / Error message
 
@@ -91,7 +105,7 @@ def update_product(product_id: str):
 
     """
 
-    product = Product.find_product_by_id(product_id)
+    product = Product.find_by_id(product_id)
     if product is None:
         return send_result(message="Product not found!")
 
@@ -103,26 +117,31 @@ def update_product(product_id: str):
         logger.error('{} Parameters error: '.format(datetime.now().strftime('%Y-%b-%d %H:%M:%S')) + str(ex))
         return send_error(message="Parameters invalid")
 
-    keys = ["name", "price", "description", "subcategory_id", "size"]
+    keys = ["title", "publish_year", "page_number", "quantity", "quotes_about", "discount",
+            "start_at", "end_at", "author_id", "publisher_id", "category_id"]
     data = {}
     for key in keys:
         if key in json_data:
             data[key] = json_data.get(key)
             product.__setattr__(key, json_data.get(key))
+    price = json_data.get('price')
+    discount = json_data.get('discount', None)
+    product.__setattr__('price', (price-price*discount if discount is not None else price))
 
     try:
+        db.session.add(product)
         for image_id in json_data.get('images'):
-            product_image = ProductImage.find_image_by_id(image_id)
+            product_image = ProductImage.find_by_id(image_id)
             if product_image is not None:
                 product_image.product_id = product.id
-                product_image.save_to_db()
+                db.session.add(product_image)
 
-        product.save_to_db()
+        db.session.commit()
     except Exception as ex:
         logger.error('{} Database error: '.format(datetime.now().strftime('%Y-%b-%d %H:%M:%S')) + str(ex))
         return send_error(message="An error occurred while update product")
 
-    return send_result(data=data, message="Update product successfully!")
+    return send_result(data=product.json(), message="Update product successfully!")
 
 
 @api.route('/<product_id>', methods=['DELETE'])
@@ -136,14 +155,16 @@ def delete_product(product_id: str):
         Examples::
 
     """
-    product = Product.find_product_by_id(product_id)
+    product = Product.find_by_id(product_id)
     if product is None:
         return send_result(message="Product not found!")
 
     try:
-        product_images = ProductImage.find_image_by_product_id(product_id)
+        product_images = ProductImage.find_by_product_id(product_id)
         for image in product_images:
-            os.remove(os.path.join(PATH_IMAGE, image.filename))
+            # os.remove(os.path.join(PATH_IMAGE, image.filename))
+            # todo: remove from cloudinary
+            pass
         # Also delete all children foreign key
         product.delete_from_db()
     except Exception as ex:
@@ -154,7 +175,7 @@ def delete_product(product_id: str):
 
 
 @api.route('', methods=['GET'])
-def get_all_products():
+def get_all():
     """ This api gets all products.
 
         Returns:
@@ -162,7 +183,7 @@ def get_all_products():
         Examples::
 
     """
-    name_cake = request.args.get('q', '', type=str)
+    name = request.args.get('q', '', type=str)
     limit = request.args.get('limit', 20, type=int)
     page = request.args.get('page', 1, type=int)
     category_id = request.args.get('category', None, type=str)
@@ -170,7 +191,7 @@ def get_all_products():
     min_price = request.args.get('min_price', 0, type=int)
     max_price = request.args.get('max_price', 9999999999, type=int)
 
-    results = Product.filter(name_cake, category_id, sort, min_price, max_price, limit, page)
+    results = Product.filter(name, category_id, sort, min_price, max_price, limit, page)
     res = dict(has_next=results.has_next,
                has_prev=results.has_prev,
                items=list(result.json() for result in results.items),
@@ -181,7 +202,7 @@ def get_all_products():
 
 
 @api.route('/<product_id>', methods=['GET'])
-def get_product_by_id(product_id: str):
+def get_by_id(product_id: str):
     """ This api get information of a product.
 
         Returns:
@@ -190,7 +211,7 @@ def get_product_by_id(product_id: str):
 
     """
 
-    product = Product.find_product_by_id(product_id)
+    product = Product.find_by_id(product_id)
     if not product:
         return send_result(message="Product not found!")
     return send_result(data=product.json())
@@ -200,15 +221,15 @@ def get_product_by_id(product_id: str):
 def get_best_seller_products():
     try:
         # calculate best seller product from order table
-        results = db.session.execute('SELECT product_id, SUM(amount) AS TotalQuantity FROM Order_details GROUP BY '
-                                     'product_id ORDER BY SUM(amount) DESC LIMIT :val', {'val': 10})
+        results = db.session.execute('SELECT product_id, SUM(quantity) AS TotalQuantity FROM order_details GROUP BY '
+                                     'product_id ORDER BY SUM(quantity) DESC LIMIT :val', {'val': 10})
 
         items = []
         for row in results:
             product_id = row['product_id']
-            items.append(Product.find_product_by_id(product_id))
+            items.append(Product.find_by_id(product_id))
         while items.__len__() < 10:
-            items.append(Product.find_random_product())
+            items.append(Product.find_random())
 
         res = dict(has_next=False,
                    has_prev=False,

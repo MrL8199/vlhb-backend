@@ -1,7 +1,7 @@
 # coding: utf-8
 
 from flask_jwt_extended.utils import decode_token, get_raw_jwt
-from sqlalchemy import desc, asc
+from sqlalchemy import desc, asc, func
 
 from app.extensions import db
 from app.utils import send_error, get_datetime_now_s
@@ -253,9 +253,9 @@ class Product(db.Model):
             quantity=self.quantity,
             quotes_about=self.quotes_about,
             discount=self.discount,
-            author=self.author,
-            publisher=self.publisher,
-            category=self.category,
+            author=self.author.json(),
+            publisher=self.publisher.json(),
+            category=self.category.json(),
             images=list(image.imageURL for image in self.images)
         )
 
@@ -266,6 +266,10 @@ class Product(db.Model):
     @classmethod
     def find_by_id(cls, _id: str):
         return cls.query.filter_by(id=_id).first()
+
+    @classmethod
+    def find_random(cls):
+        return cls.query.order_by(func.rand()).first()
 
     @classmethod
     def filter(cls, name: str, category_id: str, sort: str, min_price: float, max_price: float, limit: int, page: int):
@@ -282,7 +286,9 @@ class Product(db.Model):
             elif sort == 'price,asc':
                 query = query.order_by(asc(Product.price))
             elif sort == 'newest':
-                query = query.order_by(desc(Product.create_at))
+                query = query.order_by(desc(Product.created_at))
+            elif sort == 'oldest':
+                query = query.order_by(asc(Product.created_at))
         return query.paginate(page=page, per_page=limit, error_out=False)
 
     def save_to_db(self):

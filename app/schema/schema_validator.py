@@ -172,7 +172,7 @@ address_validator = {
 product_validator = {
     "type": "object",
     "properties": {
-        "name": {
+        "title": {
             "type": "string",
             "minLength": 3,
             "maxLength": 80
@@ -188,23 +188,58 @@ product_validator = {
                 "type": "string"
             }
         },
-        "description": {
+        "publish_year": {
+            "type": "number",
+            "minLength": 1,
+            "maxLength": 5
+        },
+        "page_number": {
+            "type": "number",
+            "minLength": 1,
+            "maxLength": 5
+        },
+        "quantity": {
+            "type": "number",
+            "minLength": 1,
+            "maxLength": 9
+        },
+        "quotes_about": {
             "type": "string",
             "minLength": 1,
             "maxLength": 1024
         },
+        "discount": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 101
+        },
+        "start_at": {
+            "type": "number",
+            "minLength": 1,
+            "maxLength": 20
+        },
+        "end_at": {
+            "type": "number",
+            "minLength": 1,
+            "maxLength": 20
+        },
+        "author_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 40
+        },
+        "publisher_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 40
+        },
         "category_id": {
             "type": "string",
             "minLength": 1,
-            "maxLength": 80
-        },
-        "size": {
-            "type": "string",
-            "minLength": 1,
-            "maxLength": 80
+            "maxLength": 40
         }
     },
-    "required": ["name", "price", "subcategory_id"]
+    "required": ["title", "price", "quantity", "author_id", "publisher_id", "category_id"]
 }
 
 checkout_validator = {
@@ -269,37 +304,4 @@ order_validator = {
         }
     },
     "required": ["status"]
-}
-
-recipe_validator = {
-    "type": "object",
-    "properties": {
-        "title": {
-            "type": "string",
-            "minLength": 1,
-            "maxLength": 80
-        },
-        "ingredient": {
-            "type": "string",
-            "minLength": 1,
-            "maxLength": 1000
-        },
-        "direction": {
-            "type": "string",
-            "minLength": 1,
-            "maxLength": 1000
-        },
-        "subcategory_id": {
-            "type": "string",
-            "minLength": 1,
-            "maxLength": 80
-        },
-        "images": {
-            "type": "array",
-            "items": {
-                "type": "string"
-            }
-        }
-    },
-    "required": ["title", "direction", "subcategory_id"]
 }
