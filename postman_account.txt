@@ -2,8 +2,9 @@ in progress:
 - API review
 - API checkout
 - API CURD order
-- API Cart
+- API Cart (check user chưa có cart thì tạo, check chưa có item thì add, nếu trùng thì tăng/giảm số lượng)
 - Background task update coupon valid, invalid.
+- Product lấy ảnh từ cloudinary
 
 pending:
 - gửi email đơn hàng về cho khách

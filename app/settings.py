@@ -21,7 +21,7 @@ class ProdConfig(Config):
     JWT_BLACKLIST_ENABLED = True
     JWT_BLACKLIST_TOKEN_CHECKS = ['access', 'refresh']
     # SQL Alchemy config
-    SQLALCHEMY_DATABASE_URI = 'mysql://{}:{}@{}:{}/{}?charset=utf8mb4'.format('root', 'admin1234?', 'localhost', '3306', 'onlinebookstore')
+    SQLALCHEMY_DATABASE_URI = 'mysql://{}:{}@{}:{}/{}?charset=utf8mb4'.format('w5r8xk5fn2djvixh', 'pvunh0gbyderipmp', 'pfw0ltdr46khxib3.cbetxkdyhwsb.us-east-1.rds.amazonaws.com', '3306', 'mor0nad9mx5ujmq3')
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
 
