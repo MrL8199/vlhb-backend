@@ -2,7 +2,7 @@ import os
 
 
 class Config(object):
-    SECRET_KEY = '3nF3Rn0'
+    SECRET_KEY = os.environ.get('SECRET_KEY')
     APP_DIR = os.path.abspath(os.path.dirname(__file__))  # This directory
     PROJECT_ROOT = os.path.abspath(os.path.join(APP_DIR, os.pardir))
 
@@ -21,7 +21,7 @@ class ProdConfig(Config):
     JWT_BLACKLIST_ENABLED = True
     JWT_BLACKLIST_TOKEN_CHECKS = ['access', 'refresh']
     # SQL Alchemy config
-    SQLALCHEMY_DATABASE_URI = 'mysql://{}:{}@{}:{}/{}?charset=utf8mb4'.format('w5r8xk5fn2djvixh', 'pvunh0gbyderipmp', 'pfw0ltdr46khxib3.cbetxkdyhwsb.us-east-1.rds.amazonaws.com', '3306', 'mor0nad9mx5ujmq3')
+    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL')
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
 
