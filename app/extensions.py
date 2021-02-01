@@ -14,4 +14,4 @@ app_log_handler = RotatingFileHandler(
 # logger
 logger = logging.getLogger('api')
 logger.setLevel(logging.DEBUG)
-logger.addHandler(app_log_handler)
+# logger.addHandler(app_log_handler)
