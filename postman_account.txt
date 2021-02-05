@@ -1,10 +1,15 @@
+done:
+- API CURD Publisher, Author, Category, User, Authentication
+-
+
 in progress:
+- API coupon
 - API review
 - API checkout
 - API CURD order
-- API Cart (check user chưa có cart thì tạo, check chưa có item thì add, nếu trùng thì tăng/giảm số lượng)
+- API Cart (check user chưa có cart thì tạo, check chưa có item thì add, nếu trùng thì thay đổi số lượng)
 - Background task update coupon valid, invalid.
-- Product lấy ảnh từ cloudinary
+- Product lấy ảnh từ cloudinary, phân chia ra làm hai loại, ảnh product và ảnh review
 
 pending:
 - gửi email đơn hàng về cho khách

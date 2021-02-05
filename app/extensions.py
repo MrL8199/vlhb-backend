@@ -9,8 +9,8 @@ parser = FlaskParser()
 db = SQLAlchemy()
 jwt = JWTManager()
 
-app_log_handler = RotatingFileHandler(
-    'logs/app.log', maxBytes=1000000, backupCount=30, encoding='utf-8')
+# app_log_handler = RotatingFileHandler(
+#     'logs/app.log', maxBytes=1000000, backupCount=30, encoding='utf-8')
 # logger
 logger = logging.getLogger('api')
 logger.setLevel(logging.DEBUG)

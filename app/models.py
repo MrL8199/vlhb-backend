@@ -1,8 +1,10 @@
 # coding: utf-8
+from itertools import product
 
 from flask_jwt_extended.utils import decode_token, get_raw_jwt
 from sqlalchemy import desc, asc, func
 
+from app.enums import DEFAULT_BOOK_COVER
 from app.extensions import db
 from app.utils import send_error, get_datetime_now_s
 
@@ -230,7 +232,7 @@ class Product(db.Model):
     page_number = db.Column(db.Integer, default=0)
     quantity = db.Column(db.Integer, nullable=False, default=1)
     quotes_about = db.Column(db.Text, default=None)
-    discount = db.Column(db.Float(precision=2), nullable=False, default=0)
+    discount = db.Column(db.Float(precision=2), nullable=False, default=0)  # số tiền giảm bớt của sp
     start_at = db.Column(db.Integer, default=None)
     end_at = db.Column(db.Integer, default=None)
 
@@ -304,7 +306,7 @@ class ProductImage(db.Model):
     __tablename__ = 'product_images'
 
     id = db.Column(db.String(40), primary_key=True)
-    imageURL = db.Column(db.String(80), nullable=False)
+    imageURL = db.Column(db.Text, nullable=False)
     filename = db.Column(db.String(80), nullable=False)
 
     product_id = db.Column(db.String(40), db.ForeignKey('products.id', ondelete='CASCADE'))
@@ -358,22 +360,24 @@ class Order(db.Model):
     user_id = db.Column(db.String(40), db.ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
     address_id = db.Column(db.String(40), db.ForeignKey('address.id', ondelete='CASCADE'), nullable=False)
     address = db.relationship('Address')
-    order_details = db.relationship('OrderDetail', backref='Order', lazy=True, cascade='all, delete-orphan',
-                                    passive_deletes=True)
+    items = db.relationship('OrderDetail', backref='Order', lazy=True, cascade='all, delete-orphan',
+                            passive_deletes=True)
 
     def json(self):
         return dict(
             id=self.id,
-            create_at=self.create_at,
-            name=self.name,
-            phone=self.phone,
-            district=self.district,
-            ward=self.ward,
-            address=self.address,
-            total=self.total,
+            created_at=self.created_at,
             status=self.status,
-            amount=self.amount,
-            order_details=list(detail.json() for detail in self.order_details),
+            subtotal=self.subtotal,
+            item_discount=self.item_discount,
+            tax=self.tax,
+            shipping=self.shipping,
+            total=self.total,
+            promo=self.promo,
+            discount=self.discount,
+            grand_total=self.grand_total,
+            content=self.content,
+            items=list(detail.json() for detail in self.items),
         )
 
     @classmethod
@@ -388,7 +392,7 @@ class Order(db.Model):
     def search(cls, from_date: int, to_date: int, limit: int, page: int):
         query = cls.query
         if from_date:
-            query = query.filter(Order.create_at >= from_date, Order.create_at <= to_date)
+            query = query.filter(Order.created_at >= from_date, Order.created_at <= to_date)
         return query.paginate(page=page, per_page=limit, error_out=False)
 
     def save_to_db(self):
@@ -413,11 +417,16 @@ class OrderDetail(db.Model):
     discount = db.Column(db.Float(precision=2), nullable=False, default=0.0)
     content = db.Column(db.Text, default=None)
 
+    product = db.relationship('Product')
+
     def json(self):
         return dict(
             id=self.id,
-            amount=self.amount,
-            product_id=self.product_id
+            created_at=self.created_at,
+            price=self.price,
+            quantity=self.quantity,
+            discount=self.discount,
+            product=self.product.json()
         )
 
     @classmethod
@@ -466,11 +475,11 @@ class Address(db.Model):
         )
 
     @classmethod
-    def find_by_id(cls, _id):
+    def find_by_id(cls, _id: str):
         return cls.query.filter_by(id=_id).first()
 
     @classmethod
-    def find_by_userid(cls, _id):
+    def find_by_userid(cls, _id: str):
         return cls.query.filter_by(user_id=_id).all()
 
     @classmethod
@@ -503,11 +512,11 @@ class Author(db.Model):
         }
 
     @staticmethod
-    def find_by_id(_id):
+    def find_by_id(_id: str):
         return Author.query.filter_by(id=_id).first()
 
     @staticmethod
-    def find_by_name(name):
+    def find_by_name(name: str):
         return Author.query.filter_by(name=name).first()
 
     @staticmethod
@@ -536,11 +545,11 @@ class Publisher(db.Model):
         }
 
     @staticmethod
-    def find_by_id(_id):
+    def find_by_id(_id: str):
         return Publisher.query.filter_by(id=_id).first()
 
     @staticmethod
-    def find_by_name(name):
+    def find_by_name(name: str):
         return Publisher.query.filter_by(name=name).first()
 
     @staticmethod
@@ -585,16 +594,23 @@ class Coupon(db.Model):
         }
 
     @staticmethod
-    def find_by_code(code):
+    def find_by_code(code: str):
         return Coupon.query.filter_by(code=code).first()
 
     @staticmethod
-    def find_by_id(_id):
+    def find_by_id(_id: str):
         return Coupon.query.filter_by(id=_id).first()
 
     @staticmethod
     def find_all():
         return Coupon.query.all()
+
+    @classmethod
+    def search(cls, from_date: int, to_date: int, limit: int, page: int):
+        query = cls.query
+        if from_date:
+            query = query.filter(Coupon.created_at >= from_date, Coupon.created_at <= to_date)
+        return query.paginate(page=page, per_page=limit, error_out=False)
 
     def save_to_db(self):
         db.session.add(self)
@@ -621,17 +637,22 @@ class ProductReview(db.Model):
     user_id = db.Column(db.String(40), db.ForeignKey('users.id', ondelete='NO ACTION'))
 
     def json(self):
-        return {
-            'id': self.id,
-            'title': self.title,
-            'rating': self.rating,
-            'content': self.content,
-            'create_by': self.user_name
-        }
+        return dict(
+            id=self.id,
+            created_at=self.created_at,
+            title=self.title,
+            rating=self.rating,
+            content=self.content,
+            created_by=self.user_name
+        )
 
     @staticmethod
-    def find_by_id(_id):
+    def find_by_id(_id: str):
         return Coupon.query.filter_by(id=_id).first()
+
+    @staticmethod
+    def find_by_product_id(product_id: str):
+        return ProductReview.query.filter_by(product_id=product_id).all()
 
     @staticmethod
     def find_all():
@@ -652,7 +673,14 @@ class Cart(db.Model):
     id = db.Column(db.String(40), primary_key=True)
     created_at = db.Column(db.Integer, nullable=False, default=get_datetime_now_s())
     updated_at = db.Column(db.Integer, default=None)
-    status = db.Column(db.SmallInteger, nullable=False, default=0)
+    subtotal = db.Column(db.Float(precision=2), nullable=False, default=0.0)
+    item_discount = db.Column(db.Float(precision=2), nullable=False, default=0.0)
+    tax = db.Column(db.Float(precision=2), nullable=False, default=0.0)
+    shipping = db.Column(db.Float(precision=2), nullable=False, default=0.0)
+    total = db.Column(db.Float(precision=2), nullable=False, default=0.0)
+    promo = db.Column(db.String(40), default=None)
+    discount = db.Column(db.Float(precision=2), default=0)
+    grand_total = db.Column(db.Float(precision=2), nullable=False, default=0.0)
     content = db.Column(db.Text, default=None)
 
     user_id = db.Column(db.String(40), db.ForeignKey('users.id', ondelete='NO ACTION'))
@@ -660,19 +688,27 @@ class Cart(db.Model):
                                  passive_deletes=True)
 
     def json(self):
-        return {
-            'id': self.id,
-            'user_id': self.user_id,
-            'status': self.status
-        }
+        return dict(
+            id=self.id,
+            created_at=self.created_at,
+            subtotal=self.subtotal,
+            item_discount=self.item_discount,
+            tax=self.tax,
+            shipping=self.shipping,
+            total=self.total,
+            promo=self.promo,
+            discount=self.discount,
+            grand_total=self.grand_total,
+            items=list(detail.json() for detail in self.cart_items),
+        )
 
     @classmethod
-    def find_by_id(cls, _id):
+    def find_by_id(cls, _id: str):
         return cls.query.filter_by(id=_id).first()
 
     @classmethod
-    def find_by_user_id(cls, user_id):
-        return cls.query.filter_by(user_id=user_id).all()
+    def find_by_user_id(cls, user_id: str):
+        return cls.query.filter_by(user_id=user_id).first()
 
     @classmethod
     def find_all(cls):
@@ -698,22 +734,34 @@ class CartItem(db.Model):
     quantity = db.Column(db.SmallInteger, nullable=False, default=0)
     content = db.Column(db.Text, default=None)
 
+    product_id = db.Column(db.String(40), db.ForeignKey('products.id', ondelete='SET NULL'))
+    product = db.relationship('Product')
     cart_id = db.Column(db.String(40), db.ForeignKey('carts.id', ondelete='NO ACTION'))
 
     def json(self):
-        return {
-            'id': self.id,
-            'user_id': self.user_id,
-            'total': self.price * self.quantity
-        }
+        return dict(
+            id=self.id,
+            quantity=self.quantity,
+            product_id=self.product.id,
+            product_title=self.product.title,
+            product_price=self.product.price,
+            product_discount=self.product.discount,
+            thumbnail_url=self.product.images[0].imageURL if len(self.product.images) > 0 else DEFAULT_BOOK_COVER
+        )
 
     @classmethod
-    def find_by_id(cls, _id):
+    def find_by_id(cls, _id: str):
         return cls.query.filter_by(id=_id).first()
 
     @classmethod
-    def find_by_cart_id(cls, cart_id):
-        return cls.query.filter_by(cart_id=cart_id).all()
+    def find_by_product_id(cls, cart_id: str, product_id: str):
+        """
+        This method to find cart item by product_id of current user via cart_id
+        :param cart_id: cart_id of current user
+        :param product_id: product id
+        :return: cart_item found
+        """
+        return cls.query.filter(CartItem.product_id == product_id, CartItem.cart_id == cart_id).first()
 
     @classmethod
     def find_all(cls):

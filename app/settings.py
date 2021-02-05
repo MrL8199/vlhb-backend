@@ -1,5 +1,7 @@
 import os
 
+import cloudinary
+
 
 class Config(object):
     SECRET_KEY = os.environ.get('SECRET_KEY')
@@ -23,6 +25,12 @@ class ProdConfig(Config):
     # SQL Alchemy config
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL')
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+    # Cloudinary
+    cloudinary.config(
+        cloud_name=os.environ.get('cloud_name'),
+        api_key=os.environ.get('api_key'),
+        api_secret=os.environ.get('api_secret')
+    )
 
 
 class DevConfig(Config):
@@ -39,5 +47,12 @@ class DevConfig(Config):
     JWT_BLACKLIST_ENABLED = True
     JWT_BLACKLIST_TOKEN_CHECKS = ['access', 'refresh']
     # SQL Alchemy config
-    SQLALCHEMY_DATABASE_URI = 'mysql://{}:{}@{}:{}/{}?charset=utf8mb4'.format('root', 'admin1234?', 'localhost', '3306', 'onlinebookstore')
+    SQLALCHEMY_DATABASE_URI = 'mysql://{}:{}@{}:{}/{}?charset=utf8mb4'.format('root', 'admin1234?', 'localhost', '3306',
+                                                                              'onlinebookstore')
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+    # Cloudinary
+    cloudinary.config(
+        cloud_name=os.environ.get('cloud_name'),
+        api_key=os.environ.get('api_key'),
+        api_secret=os.environ.get('api_secret')
+    )

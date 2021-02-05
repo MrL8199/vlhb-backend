@@ -23,3 +23,4 @@ wincertstore==0.2
 zipp==3.4.0
 uwsgi
 psycopg2
+cloudinary~=1.24.0

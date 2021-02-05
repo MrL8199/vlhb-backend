@@ -2,12 +2,13 @@ import os
 import uuid
 from datetime import datetime
 
+from cloudinary import uploader, api as cloudinary_api
 from flask import Blueprint, request
 from flask_jwt_extended import jwt_required
 from werkzeug.utils import secure_filename
 
 from app.decorators import admin_required
-from app.enums import UPLOAD_EXTENSIONS, PATH_IMAGE, PATH_IMAGE_SEVER
+from app.enums import UPLOAD_EXTENSIONS
 from app.extensions import logger
 from app.models import ProductImage
 from app.utils import send_result, send_error, validate_image
@@ -35,18 +36,20 @@ def post():
             if file_ext not in UPLOAD_EXTENSIONS or \
                     file_ext != validate_image(uploaded_file.stream):
                 return send_error(message="Image file not valid")
-            filename = 'product_' + str(datetime.now().timestamp()).replace('.', '') + file_ext
 
             image = ProductImage()
-            path_server = os.path.join(PATH_IMAGE_SEVER, filename)
-            path_file = os.path.join(PATH_IMAGE, filename)
-            uploaded_file.save(path_file)
+            result = uploader.upload(uploaded_file,
+                                     folder='VLHB_shop',
+                                     transformation=dict(width=600, height=600, crop="fill"),
+                                     overwrite=True,
+                                     invalidate=True
+                                     )
 
             _id = str(uuid.uuid1())
             data = {
                 'id': _id,
-                'imageURL': path_server,
-                'filename': filename
+                'imageURL': result.get('secure_url', None),
+                'filename': result.get('public_id', None)
             }
 
             for key in data.keys():
@@ -81,12 +84,12 @@ def delete_image(image_id: str):
         if type_image is None:
             return send_error(message="Type image required not valid")
 
-        image = ProductImage.find_image_by_id(image_id)
+        image = ProductImage.find_by_id(image_id)
         if image is None:
-            return send_result(message="File not found!")
+            return send_error(message="File not found!")
 
         # Also delete file in static folder
-        os.remove(os.path.join(PATH_IMAGE, image.filename))
+        cloudinary_api.delete_resources(image.filename)
         image.delete_from_db()
     except Exception as ex:
         logger.error(

@@ -1,6 +1,7 @@
 import uuid
 from datetime import datetime
 
+from cloudinary import api as cloudinary_api
 from flask import Blueprint, request
 from flask_jwt_extended import jwt_required
 from jsonschema import validate
@@ -59,7 +60,7 @@ def post():
         'id': _id,
         'create_at': get_datetime_now_s(),
         'title': title,
-        'price': (price-price*discount if discount is not None else price),
+        'price': (price - price * discount if discount is not None else price),
         'publish_year': publish_year,
         'page_number': page_number,
         'quantity': quantity,
@@ -126,7 +127,7 @@ def update_product(product_id: str):
             product.__setattr__(key, json_data.get(key))
     price = json_data.get('price')
     discount = json_data.get('discount', None)
-    product.__setattr__('price', (price-price*discount if discount is not None else price))
+    product.__setattr__('price', (price - price * discount if discount is not None else price))
 
     try:
         db.session.add(product)
@@ -161,9 +162,12 @@ def delete_product(product_id: str):
 
     try:
         product_images = ProductImage.find_by_product_id(product_id)
+        images = [image.filename for image in product_images]
+        # Also remove from cloudinary
+        cloudinary_api.delete_resources(images)
         for image in product_images:
+            # Also delete file in static folder
             # os.remove(os.path.join(PATH_IMAGE, image.filename))
-            # todo: remove from cloudinary
             pass
         # Also delete all children foreign key
         product.delete_from_db()

@@ -210,8 +210,8 @@ product_validator = {
         },
         "discount": {
             "type": "number",
-            "minimum": 0,
-            "maximum": 101
+            "minLength": 3,
+            "maxLength": 20
         },
         "start_at": {
             "type": "number",
@@ -245,22 +245,22 @@ product_validator = {
 checkout_validator = {
     "type": "object",
     "properties": {
-        "name": {
+        "address_id": {
             "type": "string",
             "minLength": 3,
             "maxLength": 80
         },
-        "phone": {
+        "cart_id": {
             "type": "string",
             "minLength": 3,
             "maxLength": 80
         },
-        "district": {
+        "content": {
             "type": "string",
-            "minLength": 3,
-            "maxLength": 80
+            "minLength": 0,
+            "maxLength": 1024
         },
-        "ward": {
+        "promo": {
             "type": "string",
             "minLength": 3,
             "maxLength": 80
@@ -304,6 +304,29 @@ order_validator = {
         }
     },
     "required": ["status"]
+}
+
+cart_validator = {
+    "type": "object",
+    "required": ["product_id", "quantity"],
+    "properties": {
+        "product_id": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 80
+        },
+        "quantity": {
+            "type": "number",
+            "minimum": 1,
+            "minLength": 1,
+            "maxLength": 9
+        },
+        "content": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 1024
+        }
+    }
 }
 
 coupon_validator = {
