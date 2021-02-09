@@ -8,7 +8,7 @@ from app.decorators import admin_required
 from app.extensions import logger
 from app.models import Order
 from app.schema.schema_validator import order_validator
-from app.utils import send_result, send_error, get_datetime_now, get_datetime_today_s
+from app.utils import send_result, send_error, get_datetime_now
 
 api = Blueprint('orders', __name__)
 
@@ -27,7 +27,7 @@ def update_order(order_id):
 
     """
 
-    order = Order.find_order_by_id(order_id)
+    order = Order.find_by_id(order_id)
     if order is None:
         return send_result(message="Order not found!")
 
@@ -61,7 +61,7 @@ def delete_order(order_id):
         Examples::
 
     """
-    order = Order.find_order_by_id(order_id)
+    order = Order.find_by_id(order_id)
     if order is None:
         return send_result(message="Order not found!")
 
@@ -86,7 +86,7 @@ def get_all_orders():
         Examples::
 
     """
-    from_date = request.args.get('from-date', get_datetime_today_s(), type=int)
+    from_date = request.args.get('from-date', None, type=int)
     to_date = request.args.get('to-date', get_datetime_now(), type=int)
     limit = request.args.get('limit', 20, type=int)
     page = request.args.get('page', None, type=int)
@@ -94,7 +94,7 @@ def get_all_orders():
     results = Order.search(from_date, to_date, limit, page)
     res = dict(has_next=results.has_next,
                has_prev=results.has_prev,
-               items=list(result.json() for result in results.items),
+               items=list(result.json_many() for result in results.items),
                page=results.page,
                pages=results.pages,
                total=results.total)
@@ -113,7 +113,7 @@ def get_order_by_id(order_id):
 
     """
 
-    order = Order.find_order_by_id(order_id)
+    order = Order.find_by_id(order_id)
     if not order:
-        return send_result(message="Order not found!")
+        return send_error(message="Order not found!")
     return send_result(data=order.json())

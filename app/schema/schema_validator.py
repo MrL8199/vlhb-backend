@@ -250,11 +250,6 @@ checkout_validator = {
             "minLength": 3,
             "maxLength": 80
         },
-        "cart_id": {
-            "type": "string",
-            "minLength": 3,
-            "maxLength": 80
-        },
         "content": {
             "type": "string",
             "minLength": 0,
@@ -264,43 +259,18 @@ checkout_validator = {
             "type": "string",
             "minLength": 3,
             "maxLength": 80
-        },
-        "address": {
-            "type": "string",
-            "minLength": 3,
-            "maxLength": 80
-        },
-        "cart": {
-            "type": "array",
-            "items": {"$ref": "#/definitions/cart_item"}
         }
     },
-    "definitions": {
-        "cart_item": {
-            "type": "object",
-            "required": ["product_id", "amount"],
-            "properties": {
-                "product_id": {
-                    "type": "string",
-                    "minLength": 3,
-                    "maxLength": 80
-                },
-                "amount": {
-                    "type": "number"
-                }
-            }
-        }
-    },
-    "required": ["name", "phone", "address", "cart"]
+    "required": ["address_id"]
 }
 
 order_validator = {
     "type": "object",
     "properties": {
         "status": {
-            "type": "string",
-            "minLength": 1,
-            "maxLength": 80
+            "type": "number",
+            "minimum": 0,
+            "maximum": 5
         }
     },
     "required": ["status"]
@@ -360,6 +330,9 @@ coupon_validator = {
         "amount": {
             "type": "number",
             "minimum": 0
+        },
+        "is_enable": {
+            "type": "boolean"
         }
     },
     "required": ["code", "value", "max_value", "start_date", "end_date", "amount"]

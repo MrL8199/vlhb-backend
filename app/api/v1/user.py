@@ -7,7 +7,7 @@ import uuid
 from datetime import datetime
 from flask_jwt_extended import jwt_required
 
-from app.models import TokenBlacklist, User
+from app.models import TokenBlacklist, User, Order
 from app.utils import send_result, send_error, hash_password, is_password_contain_space, get_datetime_now_s
 from app.extensions import logger
 from app.schema.schema_validator import user_validator, password_validator, user_update_validator
@@ -265,6 +265,7 @@ def delete_user(user_id):
 
 @api.route('', methods=['GET'])
 @jwt_required
+@admin_required()
 def get_all_users():
     """ This api gets all users.
 
@@ -280,6 +281,7 @@ def get_all_users():
 
 @api.route('/<user_id>', methods=['GET'])
 @jwt_required
+@admin_required()
 def get_user_by_id(user_id):
     """ This api get information of a user.
 
@@ -309,3 +311,70 @@ def get_profile():
     current_user = User.find_by_id(get_jwt_identity())
 
     return send_result(data=current_user.json())
+
+
+@api.route('/purchase', methods=['GET'])
+@jwt_required
+def get_all_orders():
+    """ This api for the user get their information.
+
+        Returns:
+
+        Examples::
+
+    """
+    user_id = get_jwt_identity()
+    limit = request.args.get('limit', 20, type=int)
+    page = request.args.get('page', None, type=int)
+
+    results = Order.find_by_user_id(user_id, page, limit)
+    res = dict(has_next=results.has_next,
+               has_prev=results.has_prev,
+               items=list(result.json_many() for result in results.items),
+               page=results.page,
+               pages=results.pages,
+               total=results.total)
+    return send_result(data=res)
+
+
+@api.route('/purchase/order/<order_id>', methods=['GET'])
+@jwt_required
+def get_order_by_id(order_id):
+    """ This api get information of a order.
+
+        Returns:
+
+        Examples::
+
+    """
+
+    order = Order.find_by_id(order_id)
+    if not order:
+        return send_error(message="Order not found!")
+    return send_result(data=order.json())
+
+
+@api.route('/purchase/order/<order_id>', methods=['DELETE'])
+@jwt_required
+def cancel_order_by_id(order_id):
+    """ This api to cancel a order.
+
+        Returns:
+
+        Examples::
+
+    """
+
+    order = Order.find_by_id(order_id)
+    if not order:
+        return send_error(message="Order not found!")
+    if order.status > 1:
+        return send_error(message="Không thể hủy đơn hàng đã xác nhận")
+    order.__setattr__('status', 0)
+    try:
+        order.save_to_db()
+    except Exception as ex:
+        logger.error('{} Database error: '.format(datetime.now().strftime('%Y-%b-%d %H:%M:%S')) + str(ex))
+        return send_error(message="An error occurred while cancel order")
+
+    return send_result(message="Cancel order successfully!")

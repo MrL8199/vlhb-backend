@@ -1,8 +1,8 @@
-import imghdr
 import datetime
+import imghdr
 
-from flask import jsonify
 import werkzeug
+from flask import jsonify
 from marshmallow import fields, validate as validate_
 
 from app.extensions import jwt, parser

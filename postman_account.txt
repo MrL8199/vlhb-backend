@@ -1,20 +1,27 @@
 done:
-- API CURD Publisher, Author, Category, User, Authentication
--
+- API CURD Publisher, Author, Category, User, Authentication, Coupon
+- API Cart (check user chưa có cart thì tạo, check chưa có item thì add, nếu trùng thì thay đổi số lượng)
+- API Cart (tính toán tiền luôn - có nên đưa hàm tính toán vào trong models rồi gọi mỗi lần tương tác với API Cart?)
+- API checkout:
++ check địa chỉ
++ check giỏ hàng
++ check mã giảm giá (NẾU CÓ)
++ check sản phẩm hết hàng
++ tính toán lưu vào order, order_detail
++ checkout thành công thì xóa những sản phẩm đã đặt ra khỏi giỏ hàng, reset promo code, discount promo
+- API URD order
+
 
 in progress:
-- API coupon
 - API review
-- API checkout
-- API CURD order
-- API Cart (check user chưa có cart thì tạo, check chưa có item thì add, nếu trùng thì thay đổi số lượng)
-- Background task update coupon valid, invalid.
 - Product lấy ảnh từ cloudinary, phân chia ra làm hai loại, ảnh product và ảnh review
 
 pending:
+- Background task update coupon valid, invalid.
 - gửi email đơn hàng về cho khách
 - xem order của bản thân khách
-- trigger SQL update số lượng product kho khi đơn hàng được tạo, hủy.
+- trigger SQL update số lượng product kho khi đơn hàng được tạo, hủy, xóa.
++ NẾU đặt hàng dùng coupon code thì giảm lượt sử dụng MGG xuống 1đơn vị (sử dụng trigger)
 
 daobaloc@gmail.com
 losice3480

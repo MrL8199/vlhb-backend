@@ -5,7 +5,6 @@ from flask import Blueprint, request
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from jsonschema import validate
 
-from app.decorators import admin_required
 from app.extensions import logger, db
 from app.models import Address, User
 from app.schema.schema_validator import address_validator

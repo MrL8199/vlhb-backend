@@ -1,5 +1,4 @@
 # coding: utf-8
-from itertools import product
 
 from flask_jwt_extended.utils import decode_token, get_raw_jwt
 from sqlalchemy import desc, asc, func
@@ -255,7 +254,9 @@ class Product(db.Model):
             quantity=self.quantity,
             quotes_about=self.quotes_about,
             discount=self.discount,
-            author=self.author.json(),
+            author=dict(
+                name=self.author.name,
+                id=self.author.id),
             publisher=self.publisher.json(),
             category=self.category.json(),
             images=list(image.imageURL for image in self.images)
@@ -380,6 +381,21 @@ class Order(db.Model):
             items=list(detail.json() for detail in self.items),
         )
 
+    def json_many(self):
+        return dict(
+            id=self.id,
+            created_at=self.created_at,
+            status=self.status,
+            grand_total=self.grand_total,
+            items=list(
+                dict(
+                    price=detail.price,
+                    quantity=detail.quantity,
+                    discount=detail.discount,
+                    product_name=detail.product.title
+                ) for detail in self.items)
+        )
+
     @classmethod
     def find_all(cls):
         return cls.query.all()
@@ -387,6 +403,10 @@ class Order(db.Model):
     @classmethod
     def find_by_id(cls, _id: str):
         return cls.query.filter_by(id=_id).first()
+
+    @classmethod
+    def find_by_user_id(cls, user_id: str, page: int, limit: int):
+        return cls.query.filter_by(user_id=user_id).paginate(page=page, per_page=limit, error_out=False)
 
     @classmethod
     def search(cls, from_date: int, to_date: int, limit: int, page: int):
@@ -713,6 +733,46 @@ class Cart(db.Model):
     @classmethod
     def find_all(cls):
         return cls.query.all()
+
+    def calculator_cart(self):
+        if len(self.cart_items) == 0:
+            self.promo = str(None)
+            self.discount = 0
+        promo = self.promo
+        subtotal = 0
+        item_discount = 0
+        for cart_item in self.cart_items:
+            # Tổng cộng giá của các sản phẩm trong giỏ (không tính giảm giá của sản phẩm)
+            subtotal = cart_item.quantity * cart_item.price
+            # Tổng cộng giảm giá của các sản phẩm trong giỏ
+            item_discount = cart_item.discount * cart_item.quantity
+        # TODO: chỉnh sửa lại chi phí thuế và vận chuyển sau khi đã hoàn thiện
+        # Thuế trước mắt cho bằng 0đ
+        tax = 0
+        # Phí vận chuyển, trước mắt cho bằng 20k
+        shipping = 0 if len(self.cart_items) == 0 else 20000
+        # Tổng cộng giá sau khi tính thuế, phí vận chuyển và giảm giá
+        total = subtotal + tax + shipping - item_discount
+        discount = 0
+        if promo:
+            coupon = Coupon.find_by_code(promo)
+            if coupon:
+                discount = coupon.max_value if coupon.max_value < coupon.value * item_discount else coupon.value * item_discount
+
+        # Tổng số tiền người mua phải thanh toán
+        grand_total = total - discount
+
+        cart_data = {'subtotal': subtotal,
+                     'item_discount': item_discount,
+                     'tax': tax,
+                     'shipping': shipping,
+                     'total': total,
+                     'promo': promo,
+                     'discount': discount,
+                     'grand_total': grand_total}
+
+        for key in cart_data.keys():
+            self.__setattr__(key, cart_data[key])
 
     def save_to_db(self):
         db.session.add(self)

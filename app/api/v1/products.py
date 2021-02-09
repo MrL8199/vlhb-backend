@@ -97,8 +97,8 @@ def post():
 def update_product(product_id: str):
     """ This is api for the vendor edit the product.
 
-        Request Body: title, price, images, publish_year, page_number, quantity, quotes_about, discount, start_at, end_at,
-    author_id, publisher_id,category_id
+        Request Body: title, price, images, publish_year, page_number, quantity, quotes_about, discount, start_at,
+         end_at, author_id, publisher_id,category_id
 
         Returns: Success / Error message
 
@@ -165,10 +165,9 @@ def delete_product(product_id: str):
         images = [image.filename for image in product_images]
         # Also remove from cloudinary
         cloudinary_api.delete_resources(images)
-        for image in product_images:
-            # Also delete file in static folder
-            # os.remove(os.path.join(PATH_IMAGE, image.filename))
-            pass
+        # for image in product_images:
+        #     # Also delete file in static folder
+        #     os.remove(os.path.join(PATH_IMAGE, image.filename))
         # Also delete all children foreign key
         product.delete_from_db()
     except Exception as ex:

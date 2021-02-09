@@ -9,7 +9,7 @@ from app.decorators import admin_required
 from app.extensions import logger
 from app.models import Coupon
 from app.schema.schema_validator import coupon_validator
-from app.utils import send_result, send_error, get_datetime_today_s, get_datetime_now_s
+from app.utils import send_result, send_error, get_datetime_now_s
 
 api = Blueprint('coupons', __name__)
 
@@ -38,6 +38,7 @@ def post():
         start_date = json_data.get('start_date', None)
         end_date = json_data.get('end_date', None)
         amount = json_data.get('amount', None)
+        is_enable = json_data.get('is_enable', False)
     except Exception as ex:
         logger.error('{} Parameters error: '.format(datetime.now().strftime('%Y-%b-%d %H:%M:%S')) + str(ex))
         return send_error(message="Parameters invalid")
@@ -56,7 +57,8 @@ def post():
         'description': description,
         'start_date': start_date,
         'end_date': end_date,
-        'amount': amount
+        'amount': amount,
+        'is_enable': is_enable
     }
     coupon = Coupon()
     for key in data.keys():
@@ -97,7 +99,7 @@ def update(coupon_id):
         logger.error('{} Parameters error: '.format(datetime.now().strftime('%Y-%b-%d %H:%M:%S')) + str(ex))
         return send_error(message="Parameters invalid")
 
-    keys = ["code", "description", "value", "max_value", "start_date", "end_date", "amount"]
+    keys = ["code", "description", "value", "max_value", "start_date", "end_date", "amount", "is_enable"]
     data = {}
     for key in keys:
         if key in json_data:
@@ -149,7 +151,7 @@ def get_all():
         Examples::
 
     """
-    from_date = request.args.get('from-date', get_datetime_today_s(), type=int)
+    from_date = request.args.get('from-date', None, type=int)
     to_date = request.args.get('to-date', get_datetime_now_s(), type=int)
     limit = request.args.get('limit', 20, type=int)
     page = request.args.get('page', None, type=int)
