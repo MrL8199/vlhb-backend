@@ -207,7 +207,8 @@ def get_all_by_user(product_id):
     for key in list_rate.keys():
         for review in results.items:
             list_rate.update({key: (list_rate.get(key)+1 if review.rating == int(key) else list_rate.get(key))})
-        list_rate.update({key: list_rate.get(key) / len(results.items)})
+        if len(results.items) > 0:
+            list_rate.update({key: list_rate.get(key) / len(results.items)})
     res = dict(has_next=results.has_next,
                has_prev=results.has_prev,
                items=list(result.json() for result in results.items if result.published),
