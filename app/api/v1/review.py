@@ -203,7 +203,7 @@ def get_all_by_user(product_id):
     list_rate = {'1': 0, '2': 0, '3': 0, '4': 0, '5': 0}
 
     results = ProductReview.search(product_id, from_date, to_date, limit, page)
-    average_rating = sum(review.rating for review in results.items) / len(results.items)
+    average_rating = sum(review.rating for review in results.items) / len(results.items) if len(results.items) > 0 else 0
     for key in list_rate.keys():
         for review in results.items:
             list_rate.update({key: (list_rate.get(key)+1 if review.rating == int(key) else list_rate.get(key))})
