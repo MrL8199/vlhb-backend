@@ -89,7 +89,7 @@ def update(coupon_id):
 
     coupon = Coupon.find_by_id(coupon_id)
     if coupon is None:
-        return send_error(message="Order not found!")
+        return send_error(message="Coupon not found!")
 
     try:
         json_data = request.get_json()

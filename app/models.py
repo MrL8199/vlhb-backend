@@ -378,6 +378,8 @@ class Order(db.Model):
             discount=self.discount,
             grand_total=self.grand_total,
             content=self.content,
+            user_id=self.user_id,
+            address=self.address.json(),
             items=list(detail.json() for detail in self.items),
         )
 
@@ -387,6 +389,8 @@ class Order(db.Model):
             created_at=self.created_at,
             status=self.status,
             grand_total=self.grand_total,
+            user_id=self.user_id,
+            address=self.address.json(),
             items=list(
                 dict(
                     price=detail.price,
@@ -668,15 +672,20 @@ class ProductReview(db.Model):
 
     @staticmethod
     def find_by_id(_id: str):
-        return Coupon.query.filter_by(id=_id).first()
-
-    @staticmethod
-    def find_by_product_id(product_id: str):
-        return ProductReview.query.filter_by(product_id=product_id).all()
+        return ProductReview.query.filter_by(id=_id).first()
 
     @staticmethod
     def find_all():
-        return Coupon.query.all()
+        return ProductReview.query.all()
+
+    @classmethod
+    def search(cls, product_id: str, from_date: int, to_date: int, limit: int, page: int):
+        query = cls.query
+        if product_id:
+            query = query.filter(ProductReview.product_id == product_id)
+        if from_date:
+            query = query.filter(ProductReview.created_at >= from_date, ProductReview.created_at <= to_date)
+        return query.paginate(page=page, per_page=limit, error_out=False)
 
     def save_to_db(self):
         db.session.add(self)

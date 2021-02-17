@@ -10,16 +10,18 @@ done:
 + tính toán lưu vào order, order_detail
 + checkout thành công thì xóa những sản phẩm đã đặt ra khỏi giỏ hàng, reset promo code, discount promo
 - API URD order
+- xem order của bản thân khách
+- API review
+- Khách hàng đã mua hàng mới có thể đánh giá
+- Số sao đánh giá trung bình
 
 
 in progress:
-- API review
 - Product lấy ảnh từ cloudinary, phân chia ra làm hai loại, ảnh product và ảnh review
 
 pending:
 - Background task update coupon valid, invalid.
 - gửi email đơn hàng về cho khách
-- xem order của bản thân khách
 - trigger SQL update số lượng product kho khi đơn hàng được tạo, hủy, xóa.
 + NẾU đặt hàng dùng coupon code thì giảm lượt sử dụng MGG xuống 1đơn vị (sử dụng trigger)
 

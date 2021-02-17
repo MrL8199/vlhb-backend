@@ -337,3 +337,33 @@ coupon_validator = {
     },
     "required": ["code", "value", "max_value", "start_date", "end_date", "amount"]
 }
+
+review_validator = {
+    "type": "object",
+    "properties": {
+        "title": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 80
+        },
+        "rating": {
+            "type": "number",
+            "minimum": 1,
+            "maximum": 5
+        },
+        "content": {
+            "type": "string",
+            "minimum": 0,
+            "maxLength": 1024
+        },
+        "product_id": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 80
+        },
+        "published": {
+            "type": "boolean"
+        }
+    },
+    "required": ["title", "rating", "content", "product_id"]
+}
