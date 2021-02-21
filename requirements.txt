@@ -24,3 +24,4 @@ zipp==3.4.0
 uwsgi
 psycopg2
 cloudinary~=1.24.0
+apscheduler~=3.7.0

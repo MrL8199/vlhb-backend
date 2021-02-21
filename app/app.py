@@ -1,13 +1,16 @@
 # -*- coding: utf-8 -*-
+from app.scheduler_task.update_coupon import update_coupon_status
 import traceback
 from time import strftime
 from flask import Flask, request
 from flask_cors import CORS
+from apscheduler.triggers import interval
 
 from app.api import v1 as api_v1
-from app.extensions import jwt, db, logger
+from app.extensions import jwt, db, logger, scheduler
 from app.utils import send_error
 from app.settings import ProdConfig
+from app.scheduler_task import remove_token_expiry
 
 
 def create_app(config_object=ProdConfig, content='app'):
@@ -40,6 +43,14 @@ def register_extensions(app, content, config_object):
     # don't start extensions if content != app
     if content == 'app':
         jwt.init_app(app)
+
+    if config_object.ENV == 'prod':
+        # Task Scheduler run in interval every 5 seconds
+        trigger = interval.IntervalTrigger(seconds=5)
+        scheduler.add_job(remove_token_expiry, trigger=trigger, id='remove_token_expiry', replace_existing=True)
+        scheduler.add_job(update_coupon_status, trigger=trigger, id='update_coupon_status', replace_existing=True)
+        # scheduler.add_job(add_partitions, trigger='cron', hour='07', minute='00', second='00', replace_existing=True)
+        scheduler.start()
 
     @app.after_request
     def after_request(response):

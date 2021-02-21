@@ -278,7 +278,7 @@ class Product(db.Model):
     def filter(cls, name: str, category_id: str, sort: str, min_price: float, max_price: float, limit: int, page: int):
         query = cls.query
         if name:
-            query = query.filter(Product.name.contains(name))
+            query = query.filter(Product.title.contains(name))
         if category_id:
             query = query.filter(Product.category_id == category_id)
         if min_price:
@@ -628,6 +628,27 @@ class Coupon(db.Model):
     @staticmethod
     def find_all():
         return Coupon.query.all()
+
+    @staticmethod
+    def prune_database():
+        """
+        Update coupon that have expired from the database.
+        How (and if) you call this is entirely up you. You could expose it to an
+        endpoint that only administrators could call, you could run it as a cron,
+        set it up with flask cli, etc.
+        """
+        now_in_seconds = get_datetime_now_s()
+        expired = Coupon.query.filter(Coupon.end_date < now_in_seconds, Coupon.start_date > now_in_seconds, Coupon.is_enable is True, Coupon.amount < 1).all()
+        for coupon in expired:
+            coupon.is_enable = False
+            db.session.add(coupon)
+
+        activate = Coupon.query.filter(Coupon.end_date > now_in_seconds, Coupon.start_date < now_in_seconds, Coupon.is_enable is False, Coupon.amount > 0).all()
+        for coupon in activate:
+            coupon.is_enable = True
+            db.session.add(coupon)
+        db.session.commit()
+
 
     @classmethod
     def search(cls, from_date: int, to_date: int, limit: int, page: int):
