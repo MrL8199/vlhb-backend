@@ -46,7 +46,7 @@ def register_extensions(app, content, config_object):
 
     if config_object.ENV == 'prod':
         # Task Scheduler run in interval every 5 seconds
-        trigger = interval.IntervalTrigger(seconds=5)
+        trigger = interval.IntervalTrigger(minutes=5)
         scheduler.add_job(remove_token_expiry, trigger=trigger, id='remove_token_expiry', replace_existing=True)
         scheduler.add_job(update_coupon_status, trigger=trigger, id='update_coupon_status', replace_existing=True)
         # scheduler.add_job(add_partitions, trigger='cron', hour='07', minute='00', second='00', replace_existing=True)
