@@ -28,6 +28,11 @@ pending:
 + NẾU đặt hàng dùng coupon code thì giảm lượt sử dụng MGG xuống 1đơn vị,
  mỗi khách chỉ được dùng coupon 1 lần (sử dụng trigger)
 + Trigger update coupon valid, invalid.
++ Thiết kế thêm bảng DB phục vụ việc thống kê: nhập kho (chi tiết nhập sách về bán), thông tin lịch sử update giá bán, lỗ lãi qua
+từng giai đoạn.
+- Tích hợp thanh toán online? momo
+- 3 chức năng thống kê: nhập, xuất, 1 tùy chọn. Thống kê theo từng giai đoạn
+- Xuất file excel thống kê.
 
 daobaloc@gmail.com
 losice3480

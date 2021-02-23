@@ -773,9 +773,9 @@ class Cart(db.Model):
         item_discount = 0
         for cart_item in self.cart_items:
             # Tổng cộng giá của các sản phẩm trong giỏ (không tính giảm giá của sản phẩm)
-            subtotal = cart_item.quantity * cart_item.price
+            subtotal += cart_item.quantity * cart_item.price
             # Tổng cộng giảm giá của các sản phẩm trong giỏ
-            item_discount = cart_item.discount * cart_item.quantity
+            item_discount += cart_item.discount * cart_item.quantity
         # TODO: chỉnh sửa lại chi phí thuế và vận chuyển sau khi đã hoàn thiện
         # Thuế trước mắt cho bằng 0đ
         tax = 0

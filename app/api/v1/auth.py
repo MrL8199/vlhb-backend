@@ -60,7 +60,8 @@ def login():
         'username': user.user_name,
         'email': user.email,
         'phone': user.phone,
-        'nickname': user.nickname
+        'nickname': user.nickname,
+        'role': 'admin' if user.is_admin else 'user'
     }, message='Login successfully!')
 
 
