@@ -14,6 +14,8 @@ done:
 - API review
 - Khách hàng đã mua hàng mới có thể đánh giá
 - Số sao đánh giá trung bình
+- chỉ cho khách hủy khi trạng thái đơn hàng còn ở trạng thái vừa đặt
+- xử lý sự kiện set default: default địa chỉ = 0 khi có một địa chỉ mới được set default
 
 
 in progress:
@@ -22,10 +24,10 @@ in progress:
 pending:
 - Background task update coupon valid, invalid.
 - gửi email đơn hàng về cho khách
-- chỉ cho khách hủy khi trạng thái đơn hàng còn ở trạng thái vừa đặt
 - trigger SQL update số lượng product kho khi đơn hàng được tạo, hủy, xóa.
 + NẾU đặt hàng dùng coupon code thì giảm lượt sử dụng MGG xuống 1đơn vị,
  mỗi khách chỉ được dùng coupon 1 lần (sử dụng trigger)
++ Trigger update coupon valid, invalid.
 
 daobaloc@gmail.com
 losice3480

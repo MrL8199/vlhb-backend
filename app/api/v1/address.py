@@ -41,6 +41,11 @@ def post():
         logger.error('{} Parameters error: '.format(datetime.now().strftime('%Y-%b-%d %H:%M:%S')) + str(ex))
         return send_error(message="Parameters invalid")
 
+    default = True
+    addresses = Address.find_by_userid(get_jwt_identity())
+    if addresses:
+        default = False
+
     _id = str(uuid.uuid1())
     data = {
         'id': _id,
@@ -178,11 +183,13 @@ def set_default_address(address_id):
     if not address:
         return send_error(message="Address not found!")
     user = User.find_by_id(get_jwt_identity())
+
+    old_default_address = db.session.query(Address).filter(Address.user_id == user.id, Address.default == 1).all()
+    for old_address in old_default_address:
+        old_address.__setattr__('default', False)
+        db.session.add(old_address)
+
     address.__setattr__('default', True)
-    old_default_address = db.session.query(Address).filter(Address.user_id == user.id, Address.default is True).first()
-    if old_default_address:
-        old_default_address.__setattr__('default', False)
-        db.session.add(old_default_address)
     try:
         db.session.commit()
         address.save_to_db()

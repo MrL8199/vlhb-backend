@@ -2,12 +2,12 @@ import uuid
 from datetime import datetime
 
 from flask import Blueprint, request
-from flask_jwt_extended import jwt_required
+from flask_jwt_extended import jwt_required, get_jwt_identity
 from jsonschema import validate
 
 from app.decorators import admin_required
-from app.extensions import logger
-from app.models import Coupon
+from app.extensions import logger, db
+from app.models import Coupon, Cart
 from app.schema.schema_validator import coupon_validator
 from app.utils import send_result, send_error, get_datetime_now_s
 
@@ -204,4 +204,16 @@ def get_by_code(coupon_code):
         'value': coupon.value,
         'max_value': coupon.max_value
     }
+
+    cart = Cart.find_by_user_id(get_jwt_identity())
+    cart.__setattr__('promo', coupon.code)
+    try:
+        db.session.add(cart)
+        # Tính lại các giá trị của Cart
+        cart.calculator_cart()
+        db.session.add(cart)
+        db.session.commit()
+    except Exception as ex:
+        logger.error('{} Database error: '.format(datetime.now().strftime('%Y-%b-%d %H:%M:%S')) + str(ex))
+        return send_error(message="An error occurred while calculator discount")
     return send_result(data=ret)
