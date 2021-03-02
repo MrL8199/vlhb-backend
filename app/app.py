@@ -2,7 +2,7 @@
 from app.scheduler_task.update_coupon import update_coupon_status
 import traceback
 from time import strftime
-from flask import Flask, request
+from flask import Flask, request, make_response, current_app
 from flask_cors import CORS
 from apscheduler.triggers import interval
 
@@ -65,6 +65,24 @@ def register_extensions(app, content, config_object):
                          request.scheme,
                          request.full_path,
                          response.status)
+
+        origin = request.headers.get('Origin')
+        if request.method == 'OPTIONS':
+            response = current_app.make_default_options_response()
+
+            # Allow the origin which made the XHR
+            response.headers['Access-Control-Allow-Origin'] = request.headers['Origin']
+            # Allow the actual method
+            response.headers['Access-Control-Allow-Methods'] = request.headers['Access-Control-Request-Method']
+            # Allow for 10 seconds
+            response.headers['Access-Control-Max-Age'] = "10"
+
+            # 'preflight' request contains the non-standard headers the real request will have (like X-Api-Key)
+            customRequestHeaders = request.headers.get('Access-Control-Request-Headers', None)
+            if customRequestHeaders is not None:
+                # If present => allow them all
+                response.headers['Access-Control-Allow-Headers'] = customRequestHeaders
+
         return response
 
     @app.errorhandler(Exception)

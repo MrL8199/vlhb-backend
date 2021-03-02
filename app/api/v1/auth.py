@@ -33,17 +33,17 @@ def login():
         password = json_data.get('password')
     except Exception as ex:
         logger.error('{} Parameters error: '.format(get_datetime_now().strftime('%Y-%b-%d %H:%M:%S')) + str(ex))
-        return send_error(message='Invalid username or password.\nPlease try again')
+        return send_error(message='Tài khoản hoặc mật khẩu không đúng.\nVui lòng thử lại.')
 
     # log input fields
     logger.debug(f"INPUT api login: {json_data}")
 
     user = User.find_by_username(username=username)
     if user is None:
-        return send_error(message='Invalid username or password.\nPlease try again')
+        return send_error(message='Tài khoản hoặc mật khẩu không đúng.\nVui lòng thử lại.')
 
     if not check_password_hash(user.password, password):
-        return send_error(message='Invalid username or password.\nPlease try again')
+        return send_error(message='Tài khoản hoặc mật khẩu không đúng.\nVui lòng thử lại.')
 
     access_token = create_access_token(
         identity=user.id, expires_delta=ACCESS_EXPIRES)
@@ -114,6 +114,28 @@ def logout2():
     jti = get_raw_jwt()['jti']
     TokenBlacklist.revoke_token(jti)
     return send_result(message='logout_successfully')
+
+
+@api.route('/me', methods=['GET'])
+@jwt_required
+def get_me():
+    """
+    Endpoint for get the current user access_token
+    :return:
+    """
+    user_id = get_jwt_identity()
+    user = User.find_by_id(user_id)
+    if user:
+        return send_result(data={
+            'access_token': 'token',
+            'username': user.user_name,
+            'email': user.email,
+            'phone': user.phone,
+            'nickname': user.nickname,
+            'role': 'admin' if user.is_admin else 'user'
+        })
+    else:
+        return send_error()
 
 
 @jwt.token_in_blacklist_loader
