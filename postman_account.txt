@@ -33,6 +33,7 @@ từng giai đoạn.
 - Tích hợp thanh toán online? momo
 - 3 chức năng thống kê: nhập, xuất, 1 tùy chọn. Thống kê theo từng giai đoạn
 - Xuất file excel thống kê.
+- Thông báo cho admin khi có đơn hàng mới.
 
 daobaloc@gmail.com
 losice3480

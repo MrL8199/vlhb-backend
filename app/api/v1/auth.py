@@ -45,6 +45,9 @@ def login():
     if not check_password_hash(user.password, password):
         return send_error(message='Tài khoản hoặc mật khẩu không đúng.\nVui lòng thử lại.')
 
+    if not user.status:
+        return send_error(message='Tài khoản đã bị vô hiệu hóa.\nVui lòng liên hệ quản trị trang web.')
+
     access_token = create_access_token(
         identity=user.id, expires_delta=ACCESS_EXPIRES)
     refresh_token = create_refresh_token(
@@ -61,7 +64,11 @@ def login():
         'email': user.email,
         'phone': user.phone,
         'nickname': user.nickname,
-        'role': 'admin' if user.is_admin else 'user'
+        'id': user.id,
+        'avatar_url': user.avatar_url,
+        'is_admin': user.is_admin,
+        'created_at': user.created_at,
+        'updated_at': user.updated_at,
     }, message='Login successfully!')
 
 
@@ -127,12 +134,15 @@ def get_me():
     user = User.find_by_id(user_id)
     if user:
         return send_result(data={
-            'access_token': 'token',
             'username': user.user_name,
             'email': user.email,
             'phone': user.phone,
             'nickname': user.nickname,
-            'role': 'admin' if user.is_admin else 'user'
+            'id': user.id,
+            'avatar_url': user.avatar_url,
+            'is_admin': user.is_admin,
+            'created_at': user.created_at,
+            'updated_at': user.updated_at,
         })
     else:
         return send_error()

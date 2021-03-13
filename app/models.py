@@ -14,21 +14,27 @@ class User(db.Model):
     id = db.Column(db.String(40), primary_key=True)
     created_at = db.Column(db.Integer, nullable=False, default=get_datetime_now_s())
     updated_at = db.Column(db.Integer, default=None)
+    avatar_url = db.Column(db.Text)
     nickname = db.Column(db.String(80), default=None)
     user_name = db.Column(db.String(80), nullable=False, unique=True, index=True)
     password = db.Column(db.String(255), nullable=False)
     email = db.Column(db.String(100), default=None)
     phone = db.Column(db.String(20), default=None)
+    status = db.Column(db.Boolean, default=True)
     is_admin = db.Column(db.Boolean, default=False)
 
     def json(self):
         return dict(
             id=self.id,
             created_at=self.created_at,
+            avatar_url=self.avatar_url,
+            updated_at=self.updated_at,
             nickname=self.nickname,
             user_name=self.user_name,
             email=self.email,
-            phone=self.phone
+            phone=self.phone,
+            is_admin=self.is_admin,
+            status=self.status
         )
 
     @classmethod
@@ -192,6 +198,7 @@ class Category(db.Model):
 
     id = db.Column(db.String(40), primary_key=True)
     name = db.Column(db.String(80), nullable=False)
+    created_at = db.Column(db.Integer, nullable=False, default=get_datetime_now_s())
 
     products = db.relationship('Product', backref='Category', lazy=True, cascade='all, delete-orphan',
                                passive_deletes=True)
@@ -199,7 +206,8 @@ class Category(db.Model):
     def json(self):
         return dict(
             id=self.id,
-            name=self.name
+            name=self.name,
+            created_at=self.created_at
         )
 
     @classmethod
@@ -474,6 +482,7 @@ class Address(db.Model):
     __tablename__ = 'address'
 
     id = db.Column(db.String(40), primary_key=True)
+    created_at = db.Column(db.Integer, nullable=False, default=get_datetime_now_s())
     user_id = db.Column(db.String(40), db.ForeignKey('users.id', ondelete='SET NULL'))
     default = db.Column(db.Boolean, nullable=False, default=False)
     name = db.Column(db.String(50), default=None)
@@ -488,6 +497,7 @@ class Address(db.Model):
         return dict(
             id=self.id,
             user_id=self.user_id,
+            created_at=self.created_at,
             name=self.name,
             default=self.default,
             phone=self.phone,
@@ -526,13 +536,15 @@ class Author(db.Model):
     name = db.Column(db.String(80), nullable=False)
     picture = db.Column(db.Text, default=None)
     info = db.Column(db.Text, default=None)
+    created_at = db.Column(db.Integer, nullable=False, default=get_datetime_now_s())
 
     def json(self):
         return {
             'id': self.id,
             'name': self.name,
             'picture': self.picture,
-            'info': self.info
+            'info': self.info,
+            'created_at': self.created_at
         }
 
     @staticmethod
@@ -561,11 +573,13 @@ class Publisher(db.Model):
 
     id = db.Column(db.String(40), primary_key=True)
     name = db.Column(db.String(80), nullable=False)
+    created_at = db.Column(db.Integer, nullable=False, default=get_datetime_now_s())
 
     def json(self):
         return {
             'id': self.id,
-            'name': self.name
+            'name': self.name,
+            'created_at': self.created_at
         }
 
     @staticmethod
@@ -614,7 +628,9 @@ class Coupon(db.Model):
             'amount': self.amount,
             'start_date': self.start_date,
             'end_date': self.end_date,
-            'is_enable': self.is_enable
+            'is_enable': self.is_enable,
+            'created_at': self.created_at,
+            'updated_at': self.updated_at
         }
 
     @staticmethod
@@ -638,17 +654,18 @@ class Coupon(db.Model):
         set it up with flask cli, etc.
         """
         now_in_seconds = get_datetime_now_s()
-        expired = Coupon.query.filter(Coupon.end_date < now_in_seconds, Coupon.start_date > now_in_seconds, Coupon.is_enable is True, Coupon.amount < 1).all()
+        expired = Coupon.query.filter(Coupon.end_date < now_in_seconds, Coupon.start_date > now_in_seconds,
+                                      Coupon.is_enable is True, Coupon.amount < 1).all()
         for coupon in expired:
             coupon.is_enable = False
             db.session.add(coupon)
 
-        activate = Coupon.query.filter(Coupon.end_date > now_in_seconds, Coupon.start_date < now_in_seconds, Coupon.is_enable is False, Coupon.amount > 0).all()
+        activate = Coupon.query.filter(Coupon.end_date > now_in_seconds, Coupon.start_date < now_in_seconds,
+                                       Coupon.is_enable is False, Coupon.amount > 0).all()
         for coupon in activate:
             coupon.is_enable = True
             db.session.add(coupon)
         db.session.commit()
-
 
     @classmethod
     def search(cls, from_date: int, to_date: int, limit: int, page: int):
