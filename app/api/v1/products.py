@@ -52,7 +52,7 @@ def post():
 
     category = Category.find_by_id(category_id)
     if category is None:
-        return send_result(message="Category not found!")
+        return send_error(message="Category not found!")
 
     _id = str(uuid.uuid1())
 
@@ -108,7 +108,7 @@ def update_product(product_id: str):
 
     product = Product.find_by_id(product_id)
     if product is None:
-        return send_result(message="Product not found!")
+        return send_error(message="Product not found!")
 
     try:
         json_data = request.get_json()
@@ -158,7 +158,7 @@ def delete_product(product_id: str):
     """
     product = Product.find_by_id(product_id)
     if product is None:
-        return send_result(message="Product not found!")
+        return send_error(message="Product not found!")
 
     try:
         product_images = ProductImage.find_by_product_id(product_id)
@@ -216,7 +216,7 @@ def get_by_id(product_id: str):
 
     product = Product.find_by_id(product_id)
     if not product:
-        return send_result(message="Product not found!")
+        return send_error(message="Product not found!")
     return send_result(data=product.json())
 
 

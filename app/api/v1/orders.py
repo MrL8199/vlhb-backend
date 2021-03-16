@@ -29,7 +29,7 @@ def update_order(order_id):
 
     order = Order.find_by_id(order_id)
     if order is None:
-        return send_result(message="Order not found!")
+        return send_error(message="Order not found!")
 
     try:
         json_data = request.get_json()
@@ -63,7 +63,7 @@ def delete_order(order_id):
     """
     order = Order.find_by_id(order_id)
     if order is None:
-        return send_result(message="Order not found!")
+        return send_error(message="Order not found!")
 
     try:
         # Also delete all children foreign key
