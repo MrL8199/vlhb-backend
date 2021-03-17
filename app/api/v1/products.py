@@ -8,7 +8,7 @@ from jsonschema import validate
 
 from app.decorators import admin_required
 from app.extensions import logger, db
-from app.models import Product, Category, ProductImage
+from app.models import Product, Category, ProductImage, Publisher, Author
 from app.schema.schema_validator import product_validator
 from app.utils import send_result, send_error, get_datetime_now_s
 
@@ -54,6 +54,14 @@ def post():
     if category is None:
         return send_error(message="Category not found!")
 
+    publisher = Publisher.find_by_id(publisher_id)
+    if publisher is None:
+        return send_error(message="Publisher not found!")
+
+    author = Author.find_by_id(author_id)
+    if author is None:
+        return send_error(message="Author not found!")
+
     _id = str(uuid.uuid1())
 
     data = {
@@ -78,11 +86,12 @@ def post():
 
     try:
         db.session.add(product)
-        for image_id in images:
-            product_image = ProductImage.find_by_id(image_id)
-            if product_image is not None:
-                product_image.product_id = product.id
-                db.session.add(product_image)
+        if images:
+            for image_id in images:
+                product_image = ProductImage.find_by_id(image_id)
+                if product_image is not None:
+                    product_image.product_id = product.id
+                    db.session.add(product_image)
         db.session.commit()
     except Exception as ex:
         logger.error('{} Database error: '.format(datetime.now().strftime('%Y-%b-%d %H:%M:%S')) + str(ex))
@@ -131,11 +140,12 @@ def update_product(product_id: str):
 
     try:
         db.session.add(product)
-        for image_id in json_data.get('images'):
-            product_image = ProductImage.find_by_id(image_id)
-            if product_image is not None:
-                product_image.product_id = product.id
-                db.session.add(product_image)
+        if json_data.get('images'):
+            for image_id in json_data.get('images'):
+                product_image = ProductImage.find_by_id(image_id)
+                if product_image is not None:
+                    product_image.product_id = product.id
+                    db.session.add(product_image)
 
         db.session.commit()
     except Exception as ex:
@@ -164,7 +174,8 @@ def delete_product(product_id: str):
         product_images = ProductImage.find_by_product_id(product_id)
         images = [image.filename for image in product_images]
         # Also remove from cloudinary
-        cloudinary_api.delete_resources(images)
+        if images:
+            cloudinary_api.delete_resources(images)
         # for image in product_images:
         #     # Also delete file in static folder
         #     os.remove(os.path.join(PATH_IMAGE, image.filename))
@@ -194,8 +205,10 @@ def get_all():
     sort = request.args.get('sort', None, type=str)
     min_price = request.args.get('min_price', 0, type=int)
     max_price = request.args.get('max_price', 9999999999, type=int)
+    from_date = request.args.get('from_date', 0, type=int)
+    to_date = request.args.get('to_date', 9999999999, type=int)
 
-    results = Product.filter(name, category_id, sort, min_price, max_price, limit, page)
+    results = Product.filter(name, category_id, sort, min_price, max_price, limit, page, from_date, to_date)
     res = dict(has_next=results.has_next,
                has_prev=results.has_prev,
                items=list(result.json() for result in results.items),

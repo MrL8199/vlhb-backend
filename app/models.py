@@ -232,7 +232,7 @@ class Product(db.Model):
 
     id = db.Column(db.String(40), primary_key=True)
     created_at = db.Column(db.Integer, nullable=False, default=get_datetime_now_s())
-    updated_at = db.Column(db.Integer, default=None)
+    updated_at = db.Column(db.Integer, default=get_datetime_now_s())
     title = db.Column(db.String(80), nullable=False)
     price = db.Column(db.Float(precision=2), nullable=False)
     publish_year = db.Column(db.Integer, default=2021)
@@ -285,12 +285,15 @@ class Product(db.Model):
         return cls.query.order_by(func.rand()).first()
 
     @classmethod
-    def filter(cls, name: str, category_id: str, sort: str, min_price: float, max_price: float, limit: int, page: int):
+    def filter(cls, name: str, category_id: str, sort: str, min_price: float, max_price: float, limit: int, page: int,
+               from_date: int, to_date: int):
         query = cls.query
         if name:
             query = query.filter(Product.title.contains(name))
         if category_id:
             query = query.filter(Product.category_id == category_id)
+        if from_date:
+            query = query.filter(Product.updated_at >= from_date, Product.updated_at <= to_date)
         if min_price:
             query = query.filter(Product.price >= min_price, Product.price <= max_price)
         if sort:
