@@ -187,7 +187,8 @@ def get_all():
 
     """
     name = request.args.get('q', '', type=str)
-    limit = request.args.get('limit', 20, type=int)
+    page_size = request.args.get('pageSize', 20, type=int)
+    limit = request.args.get('limit', page_size, type=int)
     page = request.args.get('page', 1, type=int)
     category_id = request.args.get('category', None, type=str)
     sort = request.args.get('sort', None, type=str)
