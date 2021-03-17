@@ -267,7 +267,9 @@ class Product(db.Model):
                 id=self.author.id),
             publisher=self.publisher.json(),
             category=self.category.json(),
-            images=list(image.imageURL for image in self.images)
+            images=list(image.imageURL for image in self.images),
+            created_at=self.created_at,
+            updated_at=self.updated_at
         )
 
     @classmethod
