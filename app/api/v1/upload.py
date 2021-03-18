@@ -63,7 +63,7 @@ def post():
         logger.error(
             '{} An error occurred while save image file: '.format(datetime.now().strftime('%Y-%b-%d %H:%M:%S')) + str(
                 ex))
-        return send_error(message="An error occurred while save image file")
+        return send_error(message="An error occurred while save image file", code=400)
 
 
 @api.route('/<image_id>', methods=['DELETE'])

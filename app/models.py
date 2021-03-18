@@ -272,6 +272,26 @@ class Product(db.Model):
             updated_at=self.updated_at
         )
 
+    def json_admin(self):
+        return dict(
+            id=self.id,
+            title=self.title,
+            price=self.price,
+            publish_year=self.publish_year,
+            page_number=self.page_number,
+            quantity=self.quantity,
+            quotes_about=self.quotes_about,
+            discount=self.discount,
+            author=dict(
+                name=self.author.name,
+                id=self.author.id),
+            publisher=self.publisher.json(),
+            category=self.category.json(),
+            images=list(dict(id=image.id, url=image.imageURL) for image in self.images),
+            created_at=self.created_at,
+            updated_at=self.updated_at
+        )
+
     @classmethod
     def find_all(cls):
         return cls.query.all()

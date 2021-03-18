@@ -218,6 +218,36 @@ def get_all():
     return send_result(data=res)
 
 
+@api.route('/all', methods=['GET'])
+def get_all_admin():
+    """ This api gets all products.
+
+        Returns:
+
+        Examples::
+
+    """
+    name = request.args.get('q', '', type=str)
+    page_size = request.args.get('pageSize', 20, type=int)
+    limit = request.args.get('limit', page_size, type=int)
+    page = request.args.get('page', 1, type=int)
+    category_id = request.args.get('category', None, type=str)
+    sort = request.args.get('sort', None, type=str)
+    min_price = request.args.get('min_price', 0, type=int)
+    max_price = request.args.get('max_price', 9999999999, type=int)
+    from_date = request.args.get('from_date', 0, type=int)
+    to_date = request.args.get('to_date', 9999999999, type=int)
+
+    results = Product.filter(name, category_id, sort, min_price, max_price, limit, page, from_date, to_date)
+    res = dict(has_next=results.has_next,
+               has_prev=results.has_prev,
+               items=list(result.json_admin() for result in results.items),
+               page=results.page,
+               pages=results.pages,
+               total=results.total)
+    return send_result(data=res)
+
+
 @api.route('/<product_id>', methods=['GET'])
 def get_by_id(product_id: str):
     """ This api get information of a product.
