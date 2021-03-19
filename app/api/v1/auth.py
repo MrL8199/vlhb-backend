@@ -12,7 +12,7 @@ from app.extensions import jwt, logger
 from app.models import TokenBlacklist, User
 from app.utils import parse_req, FieldString, send_result, send_error, get_datetime_now
 
-ACCESS_EXPIRES = timedelta(minutes=30)
+ACCESS_EXPIRES = timedelta(days=30)
 REFRESH_EXPIRES = timedelta(days=30)
 api = Blueprint('auth', __name__)
 
