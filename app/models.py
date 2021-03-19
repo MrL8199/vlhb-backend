@@ -633,7 +633,7 @@ class Coupon(db.Model):
 
     id = db.Column(db.String(40), primary_key=True)
     created_at = db.Column(db.Integer, nullable=False, default=get_datetime_now_s())
-    updated_at = db.Column(db.Integer, default=None)
+    updated_at = db.Column(db.Integer, default=get_datetime_now_s())
     code = db.Column(db.String(20), unique=True, nullable=False)
     description = db.Column(db.Text, default=None)
     value = db.Column(db.Float(precision=2), nullable=False, default=0.0)

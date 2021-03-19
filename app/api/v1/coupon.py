@@ -105,6 +105,42 @@ def update(coupon_id):
         if key in json_data:
             data[key] = json_data.get(key)
             coupon.__setattr__(key, json_data.get(key))
+    coupon.__setattr__('updated_at', get_datetime_now_s())
+    try:
+        coupon.save_to_db()
+    except Exception as ex:
+        logger.error('{} Database error: '.format(datetime.now().strftime('%Y-%b-%d %H:%M:%S')) + str(ex))
+        return send_error(message="An error occurred while update coupon")
+
+    return send_result(data=coupon.json(), message="Update coupon successfully!")
+
+
+@api.route('/<coupon_id>', methods=['PATCH'])
+@jwt_required
+@admin_required()
+def set_status(coupon_id):
+    """ This is api for the vendor edit the coupon.
+
+        Request Body:
+
+        Returns:
+
+        Examples::
+
+    """
+
+    coupon = Coupon.find_by_id(coupon_id)
+    if coupon is None:
+        return send_error(message="Coupon not found!")
+
+    try:
+        json_data = request.get_json()
+    except Exception as ex:
+        logger.error('{} Parameters error: '.format(datetime.now().strftime('%Y-%b-%d %H:%M:%S')) + str(ex))
+        return send_error(message="Parameters invalid", code=420)
+
+    coupon.__setattr__('is_enable', json_data.get('is_enable'))
+    coupon.__setattr__('updated_at', get_datetime_now_s())
 
     try:
         coupon.save_to_db()
