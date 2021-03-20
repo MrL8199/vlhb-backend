@@ -292,6 +292,14 @@ class Product(db.Model):
             updated_at=self.updated_at
         )
 
+    def mini_json(self):
+        return dict(
+            id=self.id,
+            title=self.title,
+            price=self.price,
+            images=list(dict(id=image.id, url=image.imageURL) for image in self.images),
+        )
+
     @classmethod
     def find_all(cls):
         return cls.query.all()
@@ -894,6 +902,51 @@ class CartItem(db.Model):
         :return: cart_item found
         """
         return cls.query.filter(CartItem.product_id == product_id, CartItem.cart_id == cart_id).first()
+
+    @classmethod
+    def find_all(cls):
+        return cls.query.all()
+
+    def save_to_db(self):
+        db.session.add(self)
+        db.session.commit()
+
+    def delete_from_db(self):
+        db.session.delete(self)
+        db.session.commit()
+
+
+class ProductCost(db.Model):
+    __tablename__ = 'product_cost'
+
+    id = db.Column(db.String(40), primary_key=True)
+    created_at = db.Column(db.Integer, nullable=False, default=get_datetime_now_s())
+    cost = db.Column(db.Float(precision=2), nullable=False, default=0)
+    quantity = db.Column(db.SmallInteger, nullable=False, default=0)
+    total = db.Column(db.Float(precision=2), nullable=False, default=0)
+    content = db.Column(db.Text, default=None)
+
+    product_id = db.Column(db.String(40), db.ForeignKey('products.id', ondelete='SET NULL'))
+    product = db.relationship('Product')
+
+    def json(self):
+        return dict(
+            id=self.id,
+            quantity=self.quantity,
+            product_id=self.product.id,
+            product_title=self.product.title,
+            product_price=self.product.price,
+            product_cost=self.cost,
+            thumbnail_url=self.product.images[0].imageURL if len(self.product.images) > 0 else DEFAULT_BOOK_COVER
+        )
+
+    @classmethod
+    def find_by_id(cls, _id: str):
+        return cls.query.filter_by(id=_id).first()
+
+    @classmethod
+    def find_by_product_id(cls, product_id: str):
+        return cls.query.filter(ProductCost.product_id == product_id).first()
 
     @classmethod
     def find_all(cls):

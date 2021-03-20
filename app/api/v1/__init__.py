@@ -11,3 +11,4 @@ from app.api.v1 import orders
 from app.api.v1 import coupon
 from app.api.v1 import cart
 from app.api.v1 import review
+from app.api.v1 import dashboard

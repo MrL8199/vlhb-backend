@@ -25,3 +25,4 @@ uwsgi
 psycopg2
 cloudinary~=1.24.0
 apscheduler~=3.7.0
+pandas~=1.1.3

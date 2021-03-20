@@ -19,9 +19,17 @@ done:
 
 
 in progress:
-- Product lấy ảnh từ cloudinary, phân chia ra làm hai loại, ảnh product và ảnh review
+- Thống kê doanh thu: top 10 sản phẩm có doanh thu cao nhất
+- Thống kê sản phẩm: top 10 sản phẩm bán chạy nhất
+- Thống kê lợi nhuận: top 10 sản phẩm có lợi nhuận cao nhất
+- thông kê nhập hết bao tiền :v?
+- Thống kê xuất hàng?
+- Thống kê theo thời gian
+- Thống kê lợi nhuận/ doanh thu trong khoảng thời gian
+- Xuất file excel (dùng pandas)
 
 pending:
+- Product lấy ảnh từ cloudinary, phân chia ra làm hai loại, ảnh product và ảnh review
 - Background task update coupon valid, invalid.
 - gửi email đơn hàng về cho khách
 - trigger SQL update số lượng product kho khi đơn hàng được tạo, hủy, xóa.
