@@ -107,6 +107,42 @@ def update_user(user_id):
     return send_result(data=data, message="Update user successfully!")
 
 
+@api.route('/<user_id>', methods=['PATCH'])
+@jwt_required
+@admin_required()
+def set_status(user_id):
+    """ This is api for the vendor edit the user (is_admin).
+
+        Request Body:
+
+        Returns:
+
+        Examples::
+
+    """
+
+    user = User.find_by_id(user_id)
+    if user is None:
+        return send_error(message="User not found!")
+
+    try:
+        json_data = request.get_json()
+    except Exception as ex:
+        logger.error('{} Parameters error: '.format(datetime.now().strftime('%Y-%b-%d %H:%M:%S')) + str(ex))
+        return send_error(message="Parameters invalid", code=420)
+
+    user.__setattr__('is_admin', json_data.get('is_admin'))
+    user.__setattr__('updated_at', get_datetime_now_s())
+
+    try:
+        user.save_to_db()
+    except Exception as ex:
+        logger.error('{} Database error: '.format(datetime.now().strftime('%Y-%b-%d %H:%M:%S')) + str(ex))
+        return send_error(message="An error occurred while update user")
+
+    return send_result(data=user.json(), message="Update user successfully!")
+
+
 @api.route('/profile', methods=['PUT'])
 @jwt_required
 def update_info():
