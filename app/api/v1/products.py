@@ -8,7 +8,7 @@ from jsonschema import validate
 
 from app.decorators import admin_required
 from app.extensions import logger, db
-from app.models import Product, Category, ProductImage, Publisher, Author
+from app.models import Product, Category, ProductImage, Publisher, Author, ProductCost
 from app.schema.schema_validator import product_validator
 from app.utils import send_result, send_error, get_datetime_now_s
 
@@ -46,6 +46,7 @@ def post():
         author_id = json_data.get('author_id', None)
         publisher_id = json_data.get('publisher_id', None)
         category_id = json_data.get('category_id', None)
+        buy_price = json_data.get('buy_price', None)
     except Exception as ex:
         logger.error('{} Parameters error: '.format(datetime.now().strftime('%Y-%b-%d %H:%M:%S')) + str(ex))
         return send_error(message="Parameters invalid")
@@ -68,7 +69,7 @@ def post():
         'id': _id,
         'create_at': get_datetime_now_s(),
         'title': title,
-        'price': (price - price * discount if discount is not None else price),
+        'price': price,
         'publish_year': publish_year,
         'page_number': page_number,
         'quantity': quantity,
@@ -84,8 +85,22 @@ def post():
     for key in data.keys():
         product.__setattr__(key, data[key])
 
+    data_cost = {
+        'id': str(uuid.uuid1()),
+        'create_at': get_datetime_now_s(),
+        'quantity': quantity,
+        'cost': buy_price,
+        'content': 'Nhap hang luc: {}'.format(str(get_datetime_now_s())),
+        'total': float(buy_price * quantity),
+        'product_id': _id
+    }
+    product_cost = ProductCost()
+    for key in data_cost.keys():
+        product_cost.__setattr__(key, data_cost[key])
+
     try:
         db.session.add(product)
+        db.session.add(product_cost)
         if images:
             for image_id in images:
                 product_image = ProductImage.find_by_id(image_id)
@@ -127,16 +142,13 @@ def update_product(product_id: str):
         logger.error('{} Parameters error: '.format(datetime.now().strftime('%Y-%b-%d %H:%M:%S')) + str(ex))
         return send_error(message="Parameters invalid")
 
-    keys = ["title", "publish_year", "page_number", "quantity", "quotes_about", "discount",
+    keys = ["title", "publish_year", "page_number", "quotes_about", "discount",
             "start_at", "end_at", "author_id", "publisher_id", "category_id"]
     data = {}
     for key in keys:
         if key in json_data:
             data[key] = json_data.get(key)
             product.__setattr__(key, json_data.get(key))
-    price = json_data.get('price')
-    discount = json_data.get('discount', None)
-    product.__setattr__('price', (price - price * discount if discount is not None else price))
 
     try:
         db.session.add(product)
@@ -153,6 +165,62 @@ def update_product(product_id: str):
         return send_error(message="An error occurred while update product")
 
     return send_result(data=product.json(), message="Update product successfully!")
+
+
+@api.route('/<product_id>/add', methods=['POST'])
+@jwt_required
+@admin_required()
+def additional_product(product_id: str):
+    """ This is api for the vendor edit the product.
+
+        Request Body: title, price, images, publish_year, page_number, quantity, quotes_about, discount, start_at,
+         end_at, author_id, publisher_id,category_id
+
+        Returns: Success / Error message
+
+        Examples::
+
+    """
+
+    product = Product.find_by_id(product_id)
+    if product is None:
+        return send_error(message="Product not found!")
+
+    try:
+        json_data = request.get_json()
+        # Check valid params
+        validate(instance=json_data, schema=product_validator)
+        quantity = json_data.get('quantity', None)
+        buy_price = json_data.get('buy_price', None)
+    except Exception as ex:
+        logger.error('{} Parameters error: '.format(datetime.now().strftime('%Y-%b-%d %H:%M:%S')) + str(ex))
+        return send_error(message="Parameters invalid")
+
+    data_cost = {
+        'id': str(uuid.uuid1()),
+        'create_at': get_datetime_now_s(),
+        'quantity': quantity,
+        'cost': buy_price,
+        'content': 'Nhap hang luc: {}'.format(str(get_datetime_now_s())),
+        'total': float(buy_price * quantity),
+        'product_id': product_id
+    }
+    product_cost = ProductCost()
+    for key in data_cost.keys():
+        product_cost.__setattr__(key, data_cost[key])
+
+    product.__setattr__("quantity", product.quantity + quantity)
+
+    try:
+        db.session.add(product)
+        db.session.add(product_cost)
+
+        db.session.commit()
+    except Exception as ex:
+        logger.error('{} Database error: '.format(datetime.now().strftime('%Y-%b-%d %H:%M:%S')) + str(ex))
+        return send_error(message="An error occurred while update product")
+
+    return send_result(data=product.json(), message="Import additional product successfully!")
 
 
 @api.route('/<product_id>', methods=['DELETE'])

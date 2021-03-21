@@ -237,6 +237,11 @@ product_validator = {
             "type": "string",
             "minLength": 1,
             "maxLength": 40
+        },
+        "cost_price": {
+            "type": "number",
+            "minLength": 3,
+            "maxLength": 20
         }
     },
     "required": ["title", "price", "quantity", "author_id", "publisher_id", "category_id"]
